@@ -50,6 +50,14 @@ type cast struct {
 	Poster   string `json:"poster"`
 }
 
+type retrieveMovie struct{
+	Movie_id      string       `json:"uuid"`
+	Title         string       `json:"title"`
+	Realease_date string       `json:"release_date"`
+	Languge_name  string       `json:"language_name"`
+	Running_time  string	   `json:"running_time`
+}
+
 
 var Db *sql.DB
 var err error
@@ -100,46 +108,46 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 func GetMovieDataByName(w http.ResponseWriter, r *http.Request) {
 	movieName := r.URL.Query().Get("name")
 	// var id retrieveId
-	var id string
-	var movie movdata
+	// var id string
+	var movie retrieveMovie
 	//to find the primary key
-	query := fmt.Sprint("select movie_id from movie where title='" + movieName + "'")
+	query := fmt.Sprint("select m.movie_id,m.title,m.release_date,m.language_name, r.hours || ';' ||r.minutes as running_time from movie m inner join running_time r on m.movie_id=(select movie_id from movie where title ='"+movieName+"') and m.movie_id = r.movie_id;")
 	rows, err := Db.Query(query)
 	checkErr(err)
 	defer rows.Close()
 	for rows.Next() {
 		// err = rows.Scan(&id.Uuid)
-		err = rows.Scan(&id)
+		err = rows.Scan(&movie.Movie_id, &movie.Title, &movie.Realease_date, &movie.Languge_name,&movie.Running_time)
 		checkErr(err)
 	}
 	//to get the data from the movie table
-	query = fmt.Sprint("select * from movie where movie_id='" + id + "'")//
-	rows, err = Db.Query(query)
-	checkErr(err)
-	defer rows.Close()
-	for rows.Next() {
-		err = rows.Scan(&movie.Movie_id, &movie.Title, &movie.Realease_date, &movie.Languge_name, &movie.Summary)
-	}
-	//to get the data from the running_time table
-	query = fmt.Sprint("select hours,minutes from running_time where movie_id='" + id + "'")//
-	rows, err = Db.Query(query)
-	checkErr(err)
-	defer rows.Close()
-	for rows.Next() {
-		err = rows.Scan(&movie.Running_time.Hours, &movie.Running_time.Minutes)
-		checkErr(err)
-	}
+	// query = fmt.Sprint("select * from movie where movie_id='" + id + "'")//
+	// rows, err = Db.Query(query)
+	// checkErr(err)
+	// defer rows.Close()
+	// for rows.Next() {
+	// 	err = rows.Scan(&movie.Movie_id, &movie.Title, &movie.Realease_date, &movie.Languge_name, &movie.Summary)
+	// }
+	// //to get the data from the running_time table
+	// query = fmt.Sprint("select hours,minutes from running_time where movie_id='" + id + "'")//
+	// rows, err = Db.Query(query)
+	// checkErr(err)
+	// defer rows.Close()
+	// for rows.Next() {
+	// 	err = rows.Scan(&movie.Running_time.Hours, &movie.Running_time.Minutes)
+	// 	checkErr(err)
+	// }
 	//to get the data from the casts
-	query = fmt.Sprint("select name,role,actor_id,poster from casts where movie_id='" + id + "'")//
-	rows, err = Db.Query(query)
-	checkErr(err)
-	defer rows.Close()
-	var casts cast //created to use this and append them to the movie.cast structure
-	for rows.Next() {
-		err = rows.Scan(&casts.Name, &casts.Role, &casts.Actor_id, &casts.Poster)
-		checkErr(err)
-		movie.Cast = append(movie.Cast, casts)
-	}
+	// query = fmt.Sprint("select name,role,actor_id,poster from casts where movie_id='" + id + "'")//
+	// rows, err = Db.Query(query)
+	// checkErr(err)
+	// defer rows.Close()
+	// var casts cast //created to use this and append them to the movie.cast structure
+	// for rows.Next() {
+	// 	err = rows.Scan(&casts.Name, &casts.Role, &casts.Actor_id, &casts.Poster)
+	// 	checkErr(err)
+	// 	movie.Cast = append(movie.Cast, casts)
+	// }
 	json.NewEncoder(w).Encode(movie)
 }
 
