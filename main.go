@@ -17,7 +17,7 @@ post method = createdata
 */
 
 const (
-	host     = "localhost"
+	host     = "192.168.1.8"
 	port     = 5432
 	user     = "postgres"
 	password = "123456"
@@ -58,9 +58,18 @@ type retrieveMovie struct{
 	Running_time  string	   `json:"running_time`
 }
 
+type EndpointDescriptions struct{
+	Endpoints string
+	Description string
+	Parameters []parameters
+}
+
+type parameters struct{
+	Params string
+}
 
 var Db *sql.DB
-var err error
+// var err error
 
 
 func main() {
@@ -77,11 +86,25 @@ func main() {
 	//server up process
 	fmt.Println("starting server")
 	http.HandleFunc("/movie/create", PostNewMovieData)
-	http.HandleFunc("/movie/read", GetMovieDataByName)
+	http.HandleFunc("/movie/getmoviebyname", GetMovieDataByName)
+	http.HandleFunc("/minimovibuff/endpoints", APIDocumentation)
 	http.ListenAndServe(":8000", nil)
 }
 
+func APIDocumentation(w http.ResponseWriter, r *http.Request){
+	// urlPath := r.URL.Path
+	// resp := strings.Split(urlPath, "/")
+	// title := resp[1]
+	endpointsdata:=[]EndpointDescriptions{
+		{Endpoints: "/movie/create",Description: "This will create a new movie details in the database by getting the data from the moviebuff url",Parameters:[]parameters{{"name"},{"rd"},}},
+		{Endpoints: "/movie/getmoviebyname", Description: "This will retrieve the movie data from the database by using the name",Parameters: []parameters{{"name"},{"rd"},}},
+	}
+	fmt.Fprintln(w,len(endpointsdata))
+	for i:=0;i<len(endpointsdata);i++{
+		fmt.Fprintln(w,endpointsdata[i])
+	}
 
+}
 // post function, creating new data in the DB
 func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 	var movie movdata
