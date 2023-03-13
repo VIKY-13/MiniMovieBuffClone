@@ -1,0 +1,13 @@
+[
+    {
+        "Endpoints":"/movie/create",
+        "Description":"This will create a new movie details in the database by getting the data from the moviebuff url",
+        "Parameters":["name"]
+    },
+    {
+        "Endpoints":"/movie/getmoviebyname",
+        "Description":"This will retrieve the movie data from the database by using the name",
+        "Parameters":["name"]
+    }
+]
+
