@@ -4,8 +4,11 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"html/template"
 	"io/ioutil"
 	"net/http"
+	"strings"
+	"github.com/gorilla/mux"
 
 	_ "github.com/lib/pq"
 )
@@ -17,7 +20,7 @@ post method = createdata
 */
 
 const (
-	host     = "localhost"
+	host     = "localhost"//192.168.1.8
 	port     = 5432
 	user     = "postgres"
 	password = "123456"
@@ -57,10 +60,25 @@ type retrieveMovie struct{
 	Languge_name  string       `json:"language_name"`
 	Running_time  string	   `json:"running_time`
 }
+//these structs are for APIDocumentations
+type EndpointDescriptions struct{
+	Endpoints string	`json:"Endpoints"`
+	Description string	`json:"Description"`
+	Parameters []string	`json:"Parameters"`
+}
 
+// type parameters struct{
+// 	Params string
+// }
+
+type documentationparsedata struct{
+	Title string
+	Endpointsdata []EndpointDescriptions
+}
 
 var Db *sql.DB
-var err error
+// var err error
+var templ *template.Template
 
 
 func main() {
@@ -75,17 +93,34 @@ func main() {
 	fmt.Println("Connected to the Database")
 
 	//server up process
+	r:= mux.NewRouter()
 	fmt.Println("starting server")
-	http.HandleFunc("/movie/create", PostNewMovieData)
-	http.HandleFunc("/movie/read", GetMovieDataByName)
-	http.ListenAndServe(":8000", nil)
+	r.HandleFunc("/movie/create/{name}", PostNewMovieData).Methods("POST")
+	r.HandleFunc("/movie/getmoviebyname/{name}", GetMovieDataByName).Methods("GET")
+	r.HandleFunc("/minimovibuff/endpoints", APIDocumentation).Methods("GET")
+	http.ListenAndServe(":8000", r)
 }
 
+func APIDocumentation(w http.ResponseWriter, r *http.Request){
+	urlPath := r.URL.Path
+	resp := strings.Split(urlPath, "/")
+	title := resp[1]
+	content,err := ioutil.ReadFile("APIDocumentation.json")
+	checkErr(err)
+	endspointsdata := []EndpointDescriptions{}
+	json.Unmarshal(content,&endspointsdata)
+	s:=documentationparsedata{Title: title,Endpointsdata: endspointsdata}
+	templ= template.Must(template.ParseFiles("index.html"))
+	err = templ.Execute(w,s)
+	checkErr(err)
+}
 
 // post function, creating new data in the DB
 func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 	var movie movdata
-	movieName := r.URL.Query().Get("name")
+	vars :=mux.Vars(r)
+	movieName := vars["name"]
+	// movieName := r.URL.Query().Get("name")
 	baseURL := fmt.Sprintf("https://www.moviebuff.com/%s.json", movieName)
 	resp, err := http.Get(baseURL)
 	checkErr(err)
@@ -106,7 +141,9 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 
 // getting the data of the requested movie
 func GetMovieDataByName(w http.ResponseWriter, r *http.Request) {
-	movieName := r.URL.Query().Get("name")
+	vars :=mux.Vars(r)
+	movieName := vars["name"]
+	// movieName := r.URL.Query().Get("name")
 	// var id retrieveId
 	// var id string
 	var movie retrieveMovie
