@@ -52,7 +52,7 @@ func main() {
 	r.HandleFunc("/movie/user/favourite",GetUserFavourites).Methods("GET")
 	r.HandleFunc("/movie/user/favourite/add",AddUserFavourite).Methods("POST")
 	r.HandleFunc("/movie/user/favourite/remove",RemoveUserFavourite).Methods("DELETE")
-	http.ListenAndServe(":"+port, r)
+	http.ListenAndServe("o.o.o.o:"+port, r)
 }
 
 func DatabaseConnection(){
