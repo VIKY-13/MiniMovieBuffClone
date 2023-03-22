@@ -37,6 +37,7 @@ func main() {
 	//server up process
 	r:= mux.NewRouter()
 	fmt.Println("starting server")
+	r.HandleFunc("/",welcome).Methods("GET")
 	r.HandleFunc("/movie/rating/update", UpdateMovieRating).Methods("PUT")
 	r.HandleFunc("/movie/rating", PostMovieRating).Methods("POST")
 	r.HandleFunc("/movie/user/login", UserLogin).Methods("POST")
@@ -53,6 +54,10 @@ func main() {
 	r.HandleFunc("/movie/user/favourite/add",AddUserFavourite).Methods("POST")
 	r.HandleFunc("/movie/user/favourite/remove",RemoveUserFavourite).Methods("DELETE")
 	http.ListenAndServe("0.0.0.0:"+port, r)
+}
+
+func welcome(w http.ResponseWriter, r *http.Request){
+	fmt.Fprintf(w,"welcome")
 }
 
 func DatabaseConnection(){
