@@ -12,6 +12,23 @@ import (
 	"net/http"
 	// "strings"
 )
+
+func UpdateMovieRating(w http.ResponseWriter, r *http.Request){
+	var updaterating movierating
+	json.NewDecoder(r.Body).Decode(&updaterating)
+	_,err := Db.Query("update ratings set rating=$1 where user_id=$2 and movie_id=$3",updaterating.Rating,updaterating.User_id,updaterating.Movie_id)
+	checkErr(err)
+	json.NewEncoder(w).Encode(updaterating)
+}
+
+func PostMovieRating(w http.ResponseWriter, r *http.Request){
+	var ratingdata movierating
+	json.NewDecoder(r.Body).Decode(&ratingdata)
+	_,err := Db.Exec("insert into ratings(user_id,movie_id,rating) values($1,$2,$3)",ratingdata.User_id,ratingdata.Movie_id,ratingdata.Rating)
+	checkErr(err)
+	json.NewEncoder(w).Encode(ratingdata)
+}
+
 func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
 	cast := r.URL.Query().Get("cast")
 	language_name := r.URL.Query().Get("language_name")

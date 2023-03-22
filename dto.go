@@ -52,18 +52,30 @@ type documentationparsedata struct{
 
 //user create structures
 type user struct{
+	User_id string `json:"user_id"`
 	Firstname string `json:"firstname"`
 	Lastname string `json:"lastname"`
 	Email string `json:"email"`
 	Password string `json:"password"`
 	Age string `json:"age"`
 	Phone_no string `json:"phone_no" maxLength:"10"`
-	Genre []string `json:"genre"`
-	Language []string `json:"language"`
 }
 
 //favourite,watchlist structure
 type favourite struct{
 	User_id string `json:"user_id"`
 	Movie_id string `json:"movie_id"`
+}
+
+//user login struct
+type userlogin struct{
+	Useremail string `json:"useremail"`
+	Password string `json:"password"`
+}
+
+//rating struct
+type movierating struct{
+	User_id string `json:"user_id"`
+	Movie_id string `json:"movie_id"`
+	Rating int `json:"rating"`
 }
