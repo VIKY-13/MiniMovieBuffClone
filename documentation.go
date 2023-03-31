@@ -23,7 +23,7 @@ func APIDocumentation(w http.ResponseWriter, r *http.Request){
 	title := resp[1]
 	content,err := ioutil.ReadFile("APIDocumentation.json")
 	checkErr(err)
-	endspointsdata := []EndpointDescriptions{}
+	endspointsdata := EndpointsHead{}
 	json.Unmarshal(content,&endspointsdata)
 	s:=documentationparsedata{Title: title,Endpointsdata: endspointsdata}
 	templ= template.Must(template.ParseFiles("index.html"))

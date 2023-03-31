@@ -3,59 +3,152 @@
 <head>
 <title>MiniMovieBuff</title>
 <style>
-  body {
-    background-image: url('https://images.pexels.com/photos/36717/amazing-animal-beautiful-beautifull.jpg?cs=srgb&dl=pexels-pixabay-36717.jpg&fm=jpg');
-    background-repeat: no-repeat;
-    background-size: cover;
-  }
   table{
-    border:black;
-    border-color: rgb(0, 0, 0);
+    width: 100%;
+    table-layout: fixed;
   }
-  th{
-    color:salmon;
-    background-color: black;
-    font-size: 125%;
-    font-weight: bolder;
+  ul {
+    display: table;
+    margin: 0 auto;
+  }
+  body{
+    background-color:beige;
   }
   h1 {
-  color: rgb(223, 187, 71);
+  color: chocolate;
   font-family:'Times New Roman', Times, serif;
   font-size: 175%;
   text-align: center;
   }
-  td{
-    width: 500px;
+  h2{
+    font-size: 125%;
     text-align: center;
-    color: bisque;
+  }
+  th{
+    width: 70%;
+    color: rgb(223, 187, 71);
+    background-color: black;
     font-size: 100%;
+    font-weight: bolder;
+  }
+  
+  td{
+    width: 20%;
+    color: black;
+    text-align: left;
+    padding-left: 10px;
+    font-size: 100%;
+    word-wrap: break-word;
     font-weight: lighter;
   }
-  tr{
-    text-align: center;
-    font-weight: bold;
-  }
+  
+  
 </style>
 </head>
 <body>
   <h1>Hello {{ .Title}} !</h1>
-<table border="1">
+  <h2>Movie Related Endpoints</h2>
+  
+    <table border="1">
+      
+      <tr><th>Endpoints</th>
+      <th>Description</th>
+      <th>Parameters</th>
+      <th>Sample URL</th>
+      <th>Sample Request Body</th>
+      <th>Sample Response</th></tr>
 
-  <tr><th>Endpoints</th>
-  <th>Description</th>
-  <th>Parameters</th></tr>
-
-  {{range .Endpointsdata}}
-  <tr>
-    <td>{{.Endpoints}}</td>
-    <td>{{.Description}}</td>
-    <td>{{range .Parameters}}
-      {{.}}<br>
+      {{range .Endpointsdata.Movie}}
+      <ul style="list-style-type:circle;">
+      <tr>
+        <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
+        <td>{{.Description}}</td>
+        <td><br>{{range .Parameters}}
+          <li>{{.}}<br></li>
+          {{end}}<br>
+        </td>
+        <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>
+        <td><br><strong>Request Body:</strong>{{ .Samplereqres.ReqBody}}<br></td>
+        <td><br><strong>Response:</strong>{{ .Samplereqres.Response}}<br></td>
+      </tr>
+      </ul>
       {{end}}
-    </td>  
-  </tr>
-  {{end}}
 
-</table>
+    </table>
+    <h2>User Related Endpoints</h2>
+    <table border="1">
+      
+      <tr><th>Endpoints</th>
+      <th>Description</th>
+      <th>Parameters</th>
+      <th>Sample URL</th>
+      <th>Sample Request Body</th>
+      <th>Sample Response</th></tr>
+
+      {{range .Endpointsdata.User}}
+      <tr>
+        <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
+        <td>{{.Description}}</td>
+        <td><br>{{range .Parameters}}
+          <li>{{.}}<br></li>
+          {{end}}<br>
+        </td> 
+        <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>
+        <td><br><strong>Request Body:</strong>{{ .Samplereqres.ReqBody}}<br></td>
+        <td><br><strong>Response:</strong>{{ .Samplereqres.Response}}<br></td> 
+      </tr>
+      {{end}}
+
+    </table>
+    <h2>Favourites Related Endpoints</h2>
+    <table border="1">
+      
+      <tr><th>Endpoints</th>
+      <th>Description</th>
+      <th>Parameters</th>
+      <th>Sample URL</th>
+      <th>Sample Request Body</th>
+      <th>Sample Response</th></tr>
+
+      {{range .Endpointsdata.Favourite}}
+      <tr>
+        <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
+        <td>{{.Description}}</td>
+        <td><br>{{range .Parameters}}
+          <li>{{.}}<br></li>
+          {{end}}<br>
+        </td>
+        <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>
+        <td><br><strong>Request Body:</strong>{{ .Samplereqres.ReqBody}}<br></td>
+        <td><br><strong>Response:</strong>{{ .Samplereqres.Response}}<br></td>
+      </tr>
+      {{end}}
+
+    </table>
+    <h2>Watchlist Related Endpoints</h2>
+    <table border="1">
+      
+      <tr><th>Endpoints</th>
+      <th>Description</th>
+      <th>Parameters</th>
+      <th>Sample URL</th>
+      <th>Sample Request Body</th>
+      <th>Sample Response</th></tr>
+
+      {{range .Endpointsdata.Watchlist}}
+      <tr>
+        <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
+        <td>{{.Description}}</td>
+        <td><br>{{range .Parameters}}
+          <li>{{.}}<br></li>
+          {{end}}<br>
+        </td>
+        <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>
+        <td><br><strong>Request Body:</strong>{{ .Samplereqres.ReqBody}}<br></td>
+        <td><br><strong>Response:</strong>{{ .Samplereqres.Response}}<br></td> 
+      </tr>
+      {{end}}
+
+    </table>
 </body>
 </html>

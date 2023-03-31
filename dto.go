@@ -10,7 +10,7 @@ type movdata struct {
 	Title         string       `json:"title"`
 	Realease_date string       `json:"release_date"`
 	Languge_name  string       `json:"language_name"`
-	Running_time  running_time `json:"running_time`
+	Running_time  running_time `json:"running_time"`
 	Summary       string       `json:"summary"`
 	Cast          []cast       `json:"cast"`
 }
@@ -32,13 +32,28 @@ type retrieveMovie struct{
 	Title         string       `json:"title"`
 	Realease_date string       `json:"release_date"`
 	Languge_name  string       `json:"language_name"`
-	Running_time  string	   `json:"running_time`
+	Running_time  string	   `json:"running_time"`
 }
 //these structs are for APIDocumentations
+type EndpointsHead struct{
+	Movie []EndpointDescriptions `json:"movie"`
+	User []EndpointDescriptions `json:"user"`
+	Favourite []EndpointDescriptions `json:"favourite"`
+	Watchlist []EndpointDescriptions `json:"watchlist"`
+}
+
 type EndpointDescriptions struct{
+	Method string `json:"method"`
 	Endpoints string	`json:"endpoints"`
 	Description string	`json:"description"`
 	Parameters []string	`json:"parameters"`
+	Samplereqres SampleReqRes `json:"samplereqres"`
+}
+
+type SampleReqRes struct{
+	ReqURL string `json:"requrl"`
+	ReqBody string `json:"reqbody"`
+	Response string `json:"response"`
 }
 
 // type parameters struct{
@@ -47,10 +62,10 @@ type EndpointDescriptions struct{
 
 type documentationparsedata struct{
 	Title string
-	Endpointsdata []EndpointDescriptions
+	Endpointsdata EndpointsHead
 }
 
-//user create structures
+//create user structures
 type user struct{
 	User_id string `json:"user_id"`
 	Firstname string `json:"firstname"`
@@ -77,5 +92,6 @@ type userlogin struct{
 type movierating struct{
 	User_id string `json:"user_id"`
 	Movie_id string `json:"movie_id"`
-	Rating int `json:"rating"`
+	Rating float32 `json:"rating"`
+	Review string `json:"review"`
 }
