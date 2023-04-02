@@ -45,7 +45,7 @@ type EndpointsHead struct{
 type EndpointDescriptions struct{
 	Method string `json:"method"`
 	Endpoints string	`json:"endpoints"`
-	Description string	`json:"description"`
+	Description []string	`json:"description"`
 	Parameters []string	`json:"parameters"`
 	Samplereqres SampleReqRes `json:"samplereqres"`
 }

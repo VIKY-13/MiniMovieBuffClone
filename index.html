@@ -46,7 +46,8 @@
 </style>
 </head>
 <body>
-  <h1>Hello {{ .Title}} !</h1>
+  <h1>This is {{.Title}} API Documentation</h1>
+  <p>Abbreviations:<br>&nbsp;&nbsp;&nbsp;&nbsp;Q-Query<br>&nbsp;&nbsp;&nbsp;&nbsp;RB-Request Body</p>
   <h2>Movie Related Endpoints</h2>
   
     <table border="1">
@@ -62,9 +63,12 @@
       <ul style="list-style-type:circle;">
       <tr>
         <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
-        <td>{{.Description}}</td>
+        <td><br>{{range .Description}}
+          <br><li>{{.}}<br></li>
+          {{end}}<br>
+        </td>
         <td><br>{{range .Parameters}}
-          <li>{{.}}<br></li>
+          <br><li>{{.}}<br></li>
           {{end}}<br>
         </td>
         <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>
@@ -88,9 +92,12 @@
       {{range .Endpointsdata.User}}
       <tr>
         <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
-        <td>{{.Description}}</td>
+        <td><br>{{range .Description}}
+          <br><li>{{.}}<br></li>
+          {{end}}<br>
+        </td>
         <td><br>{{range .Parameters}}
-          <li>{{.}}<br></li>
+          <br><li>{{.}}<br></li>
           {{end}}<br>
         </td> 
         <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>
@@ -113,9 +120,12 @@
       {{range .Endpointsdata.Favourite}}
       <tr>
         <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
-        <td>{{.Description}}</td>
+        <td><br>{{range .Description}}
+          <br><li>{{.}}<br></li>
+          {{end}}<br>
+        </td>
         <td><br>{{range .Parameters}}
-          <li>{{.}}<br></li>
+          <br><li>{{.}}<br></li>
           {{end}}<br>
         </td>
         <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>
@@ -138,9 +148,12 @@
       {{range .Endpointsdata.Watchlist}}
       <tr>
         <td><strong>{{.Method}}</strong><br>{{.Endpoints}}</td>
-        <td>{{.Description}}</td>
+        <td><br>{{range .Description}}
+          <br><li>{{.}}<br></li>
+          {{end}}<br>
+        </td>
         <td><br>{{range .Parameters}}
-          <li>{{.}}<br></li>
+          <br><li>{{.}}<br></li>
           {{end}}<br>
         </td>
         <td><br><strong>Req URL:</strong>{{ .Samplereqres.ReqURL}}<br></td>

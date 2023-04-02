@@ -17,13 +17,19 @@ func CreateNewUser(w http.ResponseWriter, r *http.Request){
 	var newuser user
 	newuser.User_id = uuid.New().String()
 	json.NewDecoder(r.Body).Decode(&newuser)
-	_,err := Db.Exec("insert into users(user_id,firstname,lastname,email,password,age,phone_no) values($1,$2,$3,$4,$5,$6,$7)",newuser.User_id,newuser.Firstname,newuser.Lastname,strings.TrimSpace(newuser.Email),newuser.Password,newuser.Age,newuser.Phone_no)
-	if err!=nil{
-		http.Error(w, "check email", http.StatusConflict)
-		fmt.Fprintf(w,"enter a valid username & password")
+	//checking whether the user already exists
+	query := "SELECT COUNT(email) FROM users WHERE email=$1;"
+    var count int
+    err := Db.QueryRow(query, newuser.Email).Scan(&count)
+    checkErr(err)
+
+    // If the count is 1, the data exists
+    if count >= 1 {
+        w.WriteHeader(http.StatusConflict)
+		fmt.Fprintf(w,"user already exist")
 		return
-		// fmt.Println(err)
-	}
+    }
+	Db.Exec("insert into users(user_id,firstname,lastname,email,password,age,phone_no) values($1,$2,$3,$4,$5,$6,$7)",newuser.User_id,newuser.Firstname,newuser.Lastname,strings.TrimSpace(newuser.Email),newuser.Password,newuser.Age,newuser.Phone_no)
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(newuser)
 }
