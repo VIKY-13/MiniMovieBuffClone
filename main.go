@@ -45,7 +45,7 @@ func main() {
 	r.HandleFunc("/user/update", UpdateUserProfile).Methods("PUT")
 	r.HandleFunc("/movie/create/{name}", HostAuthentication(PostNewMovieData)).Methods("POST")
 	r.HandleFunc("/movie/getmoviebyname/{name}", GetMovieDataByName).Methods("GET")
-	r.HandleFunc("/minimovibuff/endpoints", APIDocumentation).Methods("GET")
+	r.HandleFunc("/minimoviebuff/endpoints", APIDocumentation).Methods("GET")
 	r.HandleFunc("/movie/", GetMovieDataByQueryParams).Methods("GET")
 	r.HandleFunc("/user/create",CreateNewUser).Methods("POST")
 	r.HandleFunc("/user/watchlist/add",AddMovieToUserWatchlist).Methods("POST")
