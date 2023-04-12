@@ -12,7 +12,12 @@ type movdata struct {
 	Languge_name  string       `json:"language_name"`
 	Running_time  running_time `json:"running_time"`
 	Summary       string       `json:"summary"`
+	Certification string	   `json:"certification"`
+	Genres		  []string	   `json:"genres"`
+	Photos        []string	   `json:"photos"`		
+	Trailers      []string     `json:"trailers"`
 	Cast          []cast       `json:"cast"`
+	Crew		  []crew	   `json:"crew"`
 }
 
 type running_time struct {
@@ -20,20 +25,19 @@ type running_time struct {
 	Minutes string `json:"minutes"`
 }
 
+type crew struct{
+	Name     string `json:"name"`
+	Role     string `json:"role"`
+	Crew_member_id string `json:"uuid"`
+	Poster   string `json:"poster"`
+}
 type cast struct {
 	Name     string `json:"name"`
 	Role     string `json:"role"`
-	Actor_id string `json:"uuid"`
+	Cast_member_id string `json:"uuid"`
 	Poster   string `json:"poster"`
 }
 
-type retrieveMovie struct{
-	Movie_id      string       `json:"uuid"`
-	Title         string       `json:"title"`
-	Realease_date string       `json:"release_date"`
-	Languge_name  string       `json:"language_name"`
-	Running_time  string	   `json:"running_time"`
-}
 //these structs are for APIDocumentations
 type EndpointsHead struct{
 	Movie []EndpointDescriptions `json:"movie"`

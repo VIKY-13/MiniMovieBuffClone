@@ -4,7 +4,7 @@ FROM golang:1.19-alpine
 
 WORKDIR /app
 
-COPY . .
+COPY . /app
 
 RUN go build -o /main
 
