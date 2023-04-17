@@ -15,7 +15,7 @@ import (
 )
 
 func ExploreMovies(w http.ResponseWriter, r *http.Request){
-	movies := GetMovieIdList("movie","","")
+	movies := GetAllMovieIdList()
 	w.Header().Set("content-type","application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(movies)
@@ -23,19 +23,19 @@ func ExploreMovies(w http.ResponseWriter, r *http.Request){
 
 func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
 	tc := cases.Title(language.English)
-	cast := tc.String(r.URL.Query().Get("cast"))
+	castMember := tc.String(r.URL.Query().Get("cast"))
 	language_name := tc.String(r.URL.Query().Get("language"))
 	year := tc.String(r.URL.Query().Get("year"))
 	certification := tc.String(r.URL.Query().Get("certification"))
-	var movies []movdata
+	var movies []retrieveMovData
 	if(language_name!=""){
 		movies=GetMovieIdList("movie","language_name",language_name)
 	}else if (year!=""){
-		movies=GetMovieIdList("movie","release_date",year)
+		movies=GetMovieIdListOnYear(year)
 	}else if (len(certification)!=0){
 		movies=GetMovieIdList("movie","certification",certification)
-	}else if (cast!= ""){
-		movies =GetMovieIdList("casts","name",cast)
+	}else if (castMember!= ""){
+		movies = GetMovieIdListOnCast(castMember)
 	}else{
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintln(w,"Check the query")
@@ -52,17 +52,49 @@ func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-func GetMovieIdList(table string,column string,parameter string) []movdata{
+func GetMovieIdListOnCast(castMember string) []retrieveMovData{
 	var movies_id []string
 	var movie_id string
-	var query string
-	if column=="release_date"{
-		query = fmt.Sprintf("SELECT distinct movie_id FROM "+table+" WHERE date_part('year', release_date) = '"+parameter+"';") // this query is taken if the query we passed is year
-	}else if (parameter==""){
-		query = fmt.Sprintf("SELECT movie_id FROM "+table+" ORDER BY release_date desc;") //this query is taken for the explore endpoint
-	}else{
-		query = fmt.Sprintf("select distinct movie_id from "+table+" where "+column+"='"+parameter+"';")//this query is taken for the data based on the certification,language,cast
+	statement,_ := Db.Prepare("select mc.movie_id from movie_cast mc inner join casts c on mc.cast_member_id=c.cast_member_id and c.name= $1 ;")
+	rows,_ := statement.Query(castMember)
+	for rows.Next(){
+		_ = rows.Scan(&movie_id)
+		movies_id = append(movies_id, movie_id)
 	}
+	movies,_:= RetriveDataOnMovie_id(movies_id)
+	return movies
+}
+
+func GetMovieIdListOnYear(year string) []retrieveMovData{
+	var movies_id []string
+	var movie_id string
+	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE date_part('year', release_date) = $1;")
+	rows,_ := statement.Query(year)
+	for rows.Next(){
+		_ = rows.Scan(&movie_id)
+		movies_id = append(movies_id, movie_id)
+	}
+	movies,_:= RetriveDataOnMovie_id(movies_id)
+	return movies
+}
+
+func GetAllMovieIdList()[]retrieveMovData{
+	var movies_id []string
+	var movie_id string
+	statement,_ := Db.Prepare("SELECT movie_id FROM movie ORDER BY release_date desc;")
+	rows,_ := statement.Query()
+	for rows.Next(){
+		_ = rows.Scan(&movie_id)
+		movies_id = append(movies_id, movie_id)
+	}
+	movies,_:= RetriveDataOnMovie_id(movies_id)
+	return movies
+}
+
+func GetMovieIdList(table string,column string,parameter string) []retrieveMovData{
+	var movies_id []string
+	var movie_id string
+	query := fmt.Sprintf("select distinct movie_id from "+table+" where "+column+"='"+parameter+"';")//this query is taken for the data based on the certification,language,cast
 	rows, err := Db.Query(query)
 	checkErr(err)
 	defer rows.Close()
@@ -75,10 +107,10 @@ func GetMovieIdList(table string,column string,parameter string) []movdata{
 	return movies
 }
 
-func RetriveDataOnMovie_id(movies_id []string)([]movdata ,error){
-	var movies []movdata
+func RetriveDataOnMovie_id(movies_id []string)([]retrieveMovData ,error){
+	var movies []retrieveMovData 
 	for i:=0;i<len(movies_id);i++{
-		var reqMovie movdata
+		var reqMovie retrieveMovData
 		//new code
 		//in the below statement we conntect 3 tables movie,running_time & genre of the movie 
 		statement,err := Db.Prepare("select m.*,rt.hours,rt.minutes, mg.genre from movie m inner join running_time rt on m.movie_id=rt.movie_id  and m.movie_id= $1 inner join movie_genre mg on m.movie_id= mg.movie_id;")
@@ -149,7 +181,25 @@ func RetriveDataOnMovie_id(movies_id []string)([]movdata ,error){
 			checkErr(err)
 			reqMovie.Crew = append(reqMovie.Crew, crewMember)
 		}
-
+		//Getting user reviews
+		statement,err = Db.Prepare("SELECT ROUND(AVG(rating),1) FROM reviews WHERE movie_id= $1 ;")
+		if err != nil{
+			fmt.Println("error i overall rating")
+			return movies,err
+		}
+		_ = statement.QueryRow(movies_id[i]).Scan(&reqMovie.OverallUserRating)
+		//getting all user reviews for this movie
+		statement,err = Db.Prepare("select u.firstname, r.review, r.rating from users u inner join reviews r on r.movie_id=$1 and  r.user_id=u.user_id;")
+		if err != nil{
+			fmt.Println("error in getting all user reviews")
+			return movies,err
+		}
+		rows,_ = statement.Query(movies_id[i])
+		for rows.Next(){
+			var userReviews userreviews
+			_ = rows.Scan(&userReviews.Username,&userReviews.Review,&userReviews.Rating)
+			reqMovie.UserReviews= append(reqMovie.UserReviews, userReviews)
+		}
 		//if there is more than 1 movie has to be retrieved, we get the data in a array for such cases
 		movies = append(movies, reqMovie)
 	}
