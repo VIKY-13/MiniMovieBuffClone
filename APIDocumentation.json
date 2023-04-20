@@ -1,0 +1,177 @@
+{
+    "Movie":[
+        {
+            "Method":"GET",
+            "Endpoints":"/movie/explore",
+            "Description":["This endpoint returns all movies in the DB"],
+            "Parameters":["-"],
+            "Samplereqres":{
+                "ReqURL":"https://domain.api/movie/explore",
+                "ReqBody":"     -",
+                "Response":"[{\"uuid\": \"69db6ce6-189d-4eef-bb05-0780fd02dd19\",\"title\": \"Adanga Mar\",\"release_date\": \"2018-12-21T00:00:00Z\",\"language_name\": \"Tamil\",\"running_time\": \"02;26\"},....]"
+            }
+        },
+        {
+            "Method":"POST",
+            "Endpoints":"/movie/create/{movie_name}",
+            "Description":["This will create a new movie details in the database by getting the data from the moviebuff url","This endpoint can be hit only after the authentication process in which we have used basic authentication","If we try to post a data that's already existing, returns StatusConflict"],
+            "Parameters":["Movie Name","Basic Auth: Name=VIGNESH","Basic Auth: Password=db2BIYH123iuisv37y5jcm"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/movie/create/vaathi",
+                    "ReqBody":"It hits the moviebuff api and get the json file from that",
+                    "Response":"[{\"uuid\": \"69db6ce6-189d-4eef-bb05-0780fd02dd19\",\"title\": \"Adanga Mar\",\"release_date\": \"2018-12-21T00:00:00Z\",\"language_name\": \"Tamil\",\"running_time\": \"02;26\"}]"
+            }
+        },
+        {
+            "Method":"GET",
+            "Endpoints":"/movie/getmoviebyname/{movie_name}",
+            "Description":["This will retrieve the movie data from the database by using the name","If no movie with the name given, returns StatusNotFound"],
+            "Parameters":["Name"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/movie/getmoviebyname/vaathi",
+                    "ReqBody":"     -",
+                    "Response":"[{\"uuid\": \"69db6ce6-189d-4eef-bb05-0780fd02dd19\",\"title\": \"Adanga Mar\",\"release_date\": \"2018-12-21T00:00:00Z\",\"language_name\": \"Tamil\",\"running_time\": \"02;26\"}]"
+            }
+        },
+        {
+            "Method":"GET",
+            "Endpoints":"/movie/?",
+            "Description":["This endpoints requires single query language_name (or) year (or) certification (or) cast member name","This takes only one as aquery and returns movies based on that","In case of wrong query, returns StatusBadRequest","If no data found, returns StatusNotFound"],
+            "Parameters":["Q:Language_name","Q:YEAR","Q:Certification","Q:Cast"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/movie/?year=2022(or)cast=vijay(or)language=tamil",
+                    "ReqBody":"     -",
+                    "Response":"[{\"uuid\": \"69db6ce6-189d-4eef-bb05-0780fd02dd19\",\"title\": \"Adanga Mar\",\"release_date\": \"2018-12-21T00:00:00Z\",\"language_name\": \"Tamil\",\"running_time\": \"02;26\"},...]"
+            }
+        },
+        {
+            "Method":"POST",
+            "Endpoints":"/movie/rating/new",
+            "Description":["This endpoint takes user UUID,Movie UUID, user rating and user review as its parameter and post them in the database"],
+            "Parameters":["RB:User UUID","RB:Movie UUID","RB:User Ratings","RB:User Review"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/movie/rating/new",
+                    "ReqBody":"{\"user_id\":\"7f011417-d88a-43a3-b42a-759978263f03\",\"movie_id\":\"4744555f-b31c-492a-8653-2fa50f371182\",\"rating\":4,\"review\":\"it was a good one\"}",
+                    "Response":"StatusCreated-201 and updated values"
+            }
+        },
+        {
+            "Method":"PUT",
+            "Endpoints":"/movie/rating/update",
+            "Description":["This endpoint is used when the user wants to change the ratings or review the he gave already"],
+            "Parameters":["RB:User UUID","RB:Movie UUID","RB:New User Ratings","RB:User Review"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/movie/rating/update",
+                    "ReqBody":"{\"user_id\":\"7f011417-d88a-43a3-b42a-759978263f03\",\"movie_id\":\"4744555f-b31c-492a-8653-2fa50f371182\",\"rating\":4.5,\"review\":\"it was the best one\"}",
+                    "Response":"StatusOK-200 and updated values"
+            }
+        }
+    ],
+    "User":[
+        {
+            "Method":"POST",
+            "Endpoints":"/user/create",
+            "Description":["This endpoint is used to create a user and requires various fields","the program creates UUID for each user created","It'll return the user_id which you can use to perform the favourite and watchlist functionalities","Returns StatusConflict if the user exists","On successful creation gives StatusCreated"],
+            "Parameters":["RB:Firstname","RB:Lastname","RB:Email","RB:Password","RB:Age","RB:Phone_no"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/create",
+                    "ReqBody":"{\"firstname\":\"viky\",\"lastname\":\"maran\",\"email\":\"vignesh@gmail.com\",\"password\":\"viky\",\"age\":\"21\",\"phone_no\":\"8667051457\"}",
+                    "Response":"StatusCreated-201 and updated values"
+            }
+        },
+        {
+            "Method":"POST",
+            "Endpoints":"/user/login",
+            "Description":["This endpoint is used for login","Returns StatusOK if the user is existing else returns StatusUnauthorized"],
+            "Parameters":["RB:Email","RB:Password"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/login",
+                    "ReqBody":"{\"useremail\":\"vignesh@gmail.com\",\"password\":\"viky\"}",
+                    "Response":"StatusOK-200"
+            }
+        },
+        {
+            "Method":"PUT",
+            "Endpoints":"/user/update",
+            "Description":["This endpoint is user for any updation in the user data"],
+            "Parameters":["RB:Firstname","RB:Lastname","RB:Email","RB:Password","RB:Age","RB:Phone_no"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/update",
+                    "ReqBody":"{\"firstname\":\"viky\",\"lastname\":\"maran\",\"email\":\"vignesh@gmail.com\",\"password\":\"viky\",\"age\":\"21\",\"phone_no\":\"8667051457\"}",
+                    "Response":"StatusOK-200 and updated values"
+            }
+        }
+    ],
+    "Favourite":[
+        {
+            "Method":"GET",
+            "Endpoints":"/user/favourites",
+            "Description":["This endpoint returns the list of movies that is stored as favourite of a particular user","It takes users UUID from the header and returns them"],
+            "Parameters":["RB:User UUID"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/favourites",
+                    "ReqBody":"{\"user_id\":\"e1e66c44-d4d5-4f80-9315-c01335dbfff2\"}",
+                    "Response":"[{\"uuid\": \"69db6ce6-189d-4eef-bb05-0780fd02dd19\",\"title\": \"Adanga Mar\",\"release_date\": \"2018-12-21T00:00:00Z\",\"language_name\": \"Tamil\",\"running_time\": \"02;26\"},...]"
+            }
+        },
+        {
+            "Method":"POST",
+            "Endpoints":"/user/favourite/add",
+            "Description":["This endpoint adds a movie to the users favourite list","In future the user_id and the movie_will be taken from the headers","On successful creation gives StatusCreated"],
+            "Parameters":["RB:user UUID","RB:Movie UUID"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/favourite/add",
+                    "ReqBody":"{\"user_id\":\"e1e66c44-d4d5-4f80-9315-c01335dbfff2\",\"movie_id\":\"a798fca6-0b09-471b-8741-23aa03c8bcdc\"}",
+                    "Response":"StatusCreated-201 and updated values"
+            }
+        },
+        {
+            "Method":"DELETE",
+            "Endpoints":"/user/favourite/remove",
+            "Description":["This endpoint deletes the movie from the user favourites","In future the user_id and the movie_will be taken from the headers","Returns StatusNoContent once removed"],
+            "Parameters":["RB:user UUID","RB:Movie UUID"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/favourite/remove",
+                    "ReqBody":"{\"user_id\":\"e1e66c44-d4d5-4f80-9315-c01335dbfff2\",\"movie_id\":\"a798fca6-0b09-471b-8741-23aa03c8bcdc\"}",
+                    "Response":"StatusNoContent-204"
+            }
+        }
+    ],
+    "Watchlist":[
+        {
+            "Method":"GET",
+            "Endpoints":"/user/watchlist",
+            "Description":["This endpoint returns the list of movies that is stored in watchlist of a particular user","It takes users UUID from the header and uses that as its parameter"],
+            "Parameters":["RB:User UUID"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/watchlist",
+                    "ReqBody":"{\"user_id\":\"e1e66c44-d4d5-4f80-9315-c01335dbfff2\"}",
+                    "Response":"[{\"uuid\": \"69db6ce6-189d-4eef-bb05-0780fd02dd19\",\"title\": \"Adanga Mar\",\"release_date\": \"2018-12-21T00:00:00Z\",\"language_name\": \"Tamil\",\"running_time\": \"02;26\"},...]"
+            }
+        },
+        {
+            "Method":"POST",
+            "Endpoints":"/user/watchlist/add",
+            "Description":["This endpoint adds a movie to the users watchlist","In future the user_id and the movie_will be taken from the headers"],
+            "Parameters":["RB:user UUID","RB:Movie UUID"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/watchlist/add",
+                    "ReqBody":"{\"user_id\":\"e1e66c44-d4d5-4f80-9315-c01335dbfff2\",\"movie_id\":\"a798fca6-0b09-471b-8741-23aa03c8bcdc\"}",
+                    "Response":"StatusCreated-201 and updated values"
+            }
+        },
+        {
+            "Method":"DELETE",
+            "Endpoints":"/user/watchlist/remove",
+            "Description":["This endpoint deletes the movie from the user watchlist","In futre the user_id and the movie_will be taken from the headers"],
+            "Parameters":["RB:user UUID","RB:Movie UUID"],
+            "Samplereqres":{
+                    "ReqURL":"https://domain.api/user/watchlist/remove",
+                    "ReqBody":"{\"user_id\":\"e1e66c44-d4d5-4f80-9315-c01335dbfff2\",\"movie_id\":\"a798fca6-0b09-471b-8741-23aa03c8bcdc\"}",
+                    "Response":"StatusNoContent-204"
+            }
+        }
+    ]
+}
+
+
