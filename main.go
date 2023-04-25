@@ -61,7 +61,7 @@ func main() {
 	r.HandleFunc("/user/favourites",GetUserFavourites).Methods("GET")
 	r.HandleFunc("/user/favourite/add",AddUserFavourite).Methods("POST")
 	r.HandleFunc("/user/favourite/remove",RemoveUserFavourite).Methods("DELETE")
-	http.ListenAndServe("0.0.0.0:"+port, r)
+	http.ListenAndServe(":"+port, r)
 }
 
 func welcome(w http.ResponseWriter, r *http.Request){

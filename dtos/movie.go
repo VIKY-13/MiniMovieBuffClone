@@ -1,10 +1,6 @@
-package main
+package dtos
 
-
-// type retrieveId struct {
-// 	Uuid string
-// }
-
+//we get only thes
 type movdata struct {
 	Movie_id      string       `json:"uuid"`
 	Title         string       `json:"title"`
@@ -38,62 +34,19 @@ type cast struct {
 	Poster   string `json:"poster"`
 }
 
-//these structs are for APIDocumentations
-type EndpointsHead struct{
-	Movie []EndpointDescriptions `json:"movie"`
-	User []EndpointDescriptions `json:"user"`
-	Favourite []EndpointDescriptions `json:"favourite"`
-	Watchlist []EndpointDescriptions `json:"watchlist"`
-}
-
-type EndpointDescriptions struct{
-	Method string `json:"method"`
-	Endpoints string	`json:"endpoints"`
-	Description []string	`json:"description"`
-	Parameters []string	`json:"parameters"`
-	Samplereqres SampleReqRes `json:"samplereqres"`
-}
-
-type SampleReqRes struct{
-	ReqURL string `json:"requrl"`
-	ReqBody string `json:"reqbody"`
-	Response string `json:"response"`
-}
-
-type documentationparsedata struct{
-	Title string
-	Endpointsdata EndpointsHead
-}
-
-//create user structures
-type user struct{
-	User_id string `json:"user_id"`
-	Firstname string `json:"firstname"`
-	Lastname string `json:"lastname"`
-	Email string `json:"email"`
-	Password string `json:"password"`
-	Age string `json:"age"`
-	Phone_no string `json:"phone_no" maxLength:"10"`
-}
-
-//favourite,watchlist structure
-type favourite struct{
-	User_id string `json:"user_id"`
-	Movie_id string `json:"movie_id"`
-}
-
-//user login struct
-type userlogin struct{
-	Useremail string `json:"useremail"`
-	Password string `json:"password"`
-}
-
-//rating struct
+//rating struct used to upload data in db
 type movierating struct{
 	User_id string `json:"user_id"`
 	Movie_id string `json:"movie_id"`
 	Rating float32 `json:"rating"`
 	Review string `json:"review"`
+}
+
+// this struct is used in retrieving the moviedata with reviews
+type userreviews struct{
+	Username string `json:"username"`
+	Rating	 float64 `json:"rating"`
+	Review	 string	`json:"review"`
 }
 
 //retrieve movie data struct
@@ -114,8 +67,3 @@ type retrieveMovData struct{
 	UserReviews   []userreviews `json:"userreviews"`
 }
 
-type userreviews struct{
-	Username string `json:"username"`
-	Rating	 float64 `json:"rating"`
-	Review	 string	`json:"review"`
-}

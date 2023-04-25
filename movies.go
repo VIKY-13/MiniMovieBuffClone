@@ -24,16 +24,16 @@ func ExploreMovies(w http.ResponseWriter, r *http.Request){
 func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
 	tc := cases.Title(language.English)
 	castMember := tc.String(r.URL.Query().Get("cast"))
-	language_name := tc.String(r.URL.Query().Get("language"))
+	language := tc.String(r.URL.Query().Get("language"))
 	year := tc.String(r.URL.Query().Get("year"))
 	certification := tc.String(r.URL.Query().Get("certification"))
 	var movies []retrieveMovData
-	if(language_name!=""){
-		movies=GetMovieIdList("movie","language_name",language_name)
+	if(language!=""){
+		movies=GetMovieIdListOnLanguage(language)
 	}else if (year!=""){
 		movies=GetMovieIdListOnYear(year)
 	}else if (len(certification)!=0){
-		movies=GetMovieIdList("movie","certification",certification)
+		movies=GetMovieIdListOnCertification(certification)
 	}else if (castMember!= ""){
 		movies = GetMovieIdListOnCast(castMember)
 	}else{
@@ -51,6 +51,8 @@ func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
 		return
 	}
 }
+
+//To avoid Sql Injection problem we use separate function for each queries
 
 func GetMovieIdListOnCast(castMember string) []retrieveMovData{
 	var movies_id []string
@@ -91,16 +93,50 @@ func GetAllMovieIdList()[]retrieveMovData{
 	return movies
 }
 
+
+func GetMovieIdListOnLanguage(language string) []retrieveMovData{
+	var movies_id []string
+	var movie_id string
+	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE language_name = $1;")
+	rows,_ := statement.Query(language)
+	for rows.Next(){
+		_ = rows.Scan(&movie_id)
+		movies_id = append(movies_id, movie_id)
+	}
+	movies,_:= RetriveDataOnMovie_id(movies_id)
+	return movies
+}
+
+func GetMovieIdListOnCertification(certification string) []retrieveMovData{
+	var movies_id []string
+	var movie_id string
+	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE certification = $1;")
+	rows,_ := statement.Query(certification)
+	for rows.Next(){
+		_ = rows.Scan(&movie_id)
+		movies_id = append(movies_id, movie_id)
+	}
+	movies,_:= RetriveDataOnMovie_id(movies_id)
+	return movies
+}
+
+//this function is basically used in some places where we get the data by sending these three parameter
+//used in the following functions 
 func GetMovieIdList(table string,column string,parameter string) []retrieveMovData{
 	var movies_id []string
 	var movie_id string
-	query := fmt.Sprintf("select distinct movie_id from "+table+" where "+column+"='"+parameter+"';")//this query is taken for the data based on the certification,language,cast
-	rows, err := Db.Query(query)
-	checkErr(err)
+	query := fmt.Sprintf("SELECT movie_id FROM %s WHERE %s = ?", table, column)
+	rows, err := Db.Query(query, parameter)
+	if err != nil {
+		fmt.Println("inquery")
+		panic(err.Error())
+	}
 	defer rows.Close()
 	for rows.Next() {
 		err = rows.Scan(&movie_id)
-		checkErr(err)
+		if err!= nil{
+			fmt.Println("error in scanning movieid list")
+		}
 		movies_id = append(movies_id,movie_id )
 	}//we'll be getting the list of movie id's and based on that well retrieve the data
 	movies,_:= RetriveDataOnMovie_id(movies_id)
@@ -113,13 +149,16 @@ func RetriveDataOnMovie_id(movies_id []string)([]retrieveMovData ,error){
 		var reqMovie retrieveMovData
 		//new code
 		//in the below statement we conntect 3 tables movie,running_time & genre of the movie 
-		statement,err := Db.Prepare("select m.*,rt.hours,rt.minutes, mg.genre from movie m inner join running_time rt on m.movie_id=rt.movie_id  and m.movie_id= $1 inner join movie_genre mg on m.movie_id= mg.movie_id;")
+		statement,err := Db.Prepare("select m.*, mg.genre from movie m inner join movie_genre mg on m.movie_id= mg.movie_id and m.movie_id= $1 ;")
 		if err!= nil{
 			fmt.Println("error in sql query movie")
 			return movies,err
 		}
 		rows,err := statement.Query(movies_id[i])
-		checkErr(err)
+		if err!= nil{
+			fmt.Println("error in sql query movie")
+			return movies,err
+		}
 		var genre string
 		for rows.Next(){
 			err:= rows.Scan(&reqMovie.Movie_id,&reqMovie.Title,&reqMovie.Realease_date,&reqMovie.Languge_name,&reqMovie.Summary,&reqMovie.Certification,&reqMovie.Running_time.Hours,&reqMovie.Running_time.Minutes,&genre)
@@ -164,7 +203,10 @@ func RetriveDataOnMovie_id(movies_id []string)([]retrieveMovData ,error){
 		var castMember cast //created to use this and append them to the movie.cast structure
 		for rows.Next() {
 			err = rows.Scan(&castMember.Name, &castMember.Role, &castMember.Cast_member_id, &castMember.Poster)
-			checkErr(err)
+			if err!= nil{
+				fmt.Println("error in scanning cast")
+				return movies,err
+			}
 			reqMovie.Cast = append(reqMovie.Cast, castMember)
 		}
 		//here we get the crew data by connecting the movie_crew and crew table
@@ -178,7 +220,10 @@ func RetriveDataOnMovie_id(movies_id []string)([]retrieveMovData ,error){
 		var crewMember crew //created to use this and append them to the reqMovie.crew structure
 		for rows.Next() {
 			err = rows.Scan(&crewMember.Name, &crewMember.Role, &crewMember.Crew_member_id, &crewMember.Poster)
-			checkErr(err)
+			if err!= nil{
+				fmt.Println("error in scanning crew")
+				return movies,err
+			}
 			reqMovie.Crew = append(reqMovie.Crew, crewMember)
 		}
 		//Getting user reviews
@@ -212,7 +257,10 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 	movieName := vars["name"]
 	baseURL := fmt.Sprintf("https://www.moviebuff.com/%s.json", movieName)
 	resp, err := http.Get(baseURL)
-	checkErr(err)
+	if err != nil{
+		w.WriteHeader(http.StatusBadGateway)
+		return
+	}
 	json.NewDecoder(resp.Body).Decode(&movie)
 	//checking whether the data is already exist
 	query := "SELECT COUNT(movie_id) FROM movie WHERE movie_id=$1;"
@@ -228,71 +276,65 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
     }
 //THIS IS NEWLY ADDED PROGRAM
 	//Preparing the query, Could've used inser all but for easy understanding purpose continued isering separately
-	statement,err := Db.Prepare("INSERT INTO movie (movie_id,title,release_date,language_name,summary,certification) VALUES ($1,$2,$3,$4,$5,$6)")
+	statement,err := Db.Prepare("INSERT INTO movie (movie_id,title,release_date,language_name,summary,certification,hours,minutes) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)")
 	if err!= nil{
 		fmt.Fprintf(w,"error in sql query movie")
 		return 
 	}
 	//Executing the query
-	_, err = statement.Exec(movie.Movie_id, movie.Title, movie.Realease_date, movie.Languge_name, movie.Summary, movie.Certification)
+	_, err = statement.Exec(movie.Movie_id, movie.Title, movie.Realease_date, movie.Languge_name, movie.Summary, movie.Certification,movie.Running_time.Hours, movie.Running_time.Minutes)
 	if err!= nil{
-		fmt.Println(err)
-		fmt.Fprintf(w,"error in sql queryexecution movie")
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w,err)
+		return
 	}
-	//running time data into the running time table
-	statement,err = Db.Prepare("INSERT INTO running_time (movie_id,hours,minutes) VALUES ($1,$2,$3)")
-	if err!= nil{
-		fmt.Fprintf(w,"error in sql query running_time")
-		return 
-	}
-	_,err = statement.Exec(movie.Movie_id, movie.Running_time.Hours, movie.Running_time.Minutes)
-	if err!= nil{
-		fmt.Fprintf(w,"error in sql query execution running_time")
-		return 
-	}
+	
 	//insertig genre data of the movie
-	for _,genre := range movie.Genres{
+	for i := 0 ; i < len(movie.Genres) ; i++{
 		statement,err = Db.Prepare("insert into movie_genre(movie_id,genre) values ($1,$2)")
 		if err!= nil{
 			fmt.Fprintf(w,"error in sql query movie_genre")
 			return 
 		}
-		_,err = statement.Exec(movie.Movie_id,genre)
+		_,err = statement.Exec(movie.Movie_id,movie.Genres[i])
 		if err!= nil{
-			fmt.Fprintf(w,"error in sql query execution genre")
-			return 
+			fmt.Fprintln(w,err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	}
 	//inserting photos into the table
-	for _,photos_url := range movie.Photos{
+	for i := 0 ; i < len(movie.Photos) ; i++{
 		statement,err = Db.Prepare("insert into movie_photos(movie_id,photos_url) values ($1,$2)")
 		if err!= nil{
 			fmt.Fprintf(w,"error in sql query movie_photos")
 			return 
 		}
-		_,err = statement.Exec(movie.Movie_id,photos_url)
+		_,err = statement.Exec(movie.Movie_id,movie.Photos[i])
 		if err!= nil{
-			fmt.Fprintf(w,"error in sql query execution photos")
+			fmt.Fprintln(w,err)
+			w.WriteHeader(http.StatusBadRequest)
 			return 
 		}
 	}
 	//insrting trailers url into the table
-	for _,trailer_url := range movie.Trailers{
+	for i := 0; i < len(movie.Trailers); i++{
 		statement,err = Db.Prepare("insert into movie_trailer(movie_id,trailer_url) values ($1,$2)")
 		if err!= nil{
 			fmt.Fprintf(w,"error in sql query movie_trailer")
 			return 
 		}
-		_,err = statement.Exec(movie.Movie_id,trailer_url)
+		_,err = statement.Exec(movie.Movie_id,movie.Trailers[i])
 		if err!= nil{
-			fmt.Fprintf(w,"error in sql query exe trailer")
-			return 
+			fmt.Fprintln(w,err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	}
 
 	//for cast details
 
-	for i := 0; i < len(movie.Cast); i++{
+	for i := 0 ; i < len(movie.Cast) ; i++{
 		//inserting only if there is no data of a cast member exist in the table 
 		statement,err = Db.Prepare("INSERT INTO casts(cast_member_id, name, role, poster) SELECT $1, $2, $3, $4 WHERE NOT EXISTS (SELECT * FROM casts WHERE cast_member_id = $5);")
 		if err!= nil{
@@ -301,7 +343,8 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 		}
 		_,err = statement.Exec(movie.Cast[i].Cast_member_id, movie.Cast[i].Name, movie.Cast[i].Role, movie.Cast[i].Poster,movie.Cast[i].Cast_member_id)
 		if err!= nil{
-			fmt.Fprintf(w,"error in sql query exe casts 1")
+			fmt.Fprintln(w,err)
+			w.WriteHeader(http.StatusBadRequest)
 			return 
 		}
 		//inseting cast members of a movie in the table
@@ -312,15 +355,16 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 		}
 		_,err = statement.Exec(movie.Movie_id,movie.Cast[i].Cast_member_id)
 		if err!= nil{
-			fmt.Fprintf(w,"error in sql query exe casts 2")
-			return 
+			fmt.Fprintln(w,err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	}
 	
 	//for crew details
 
-	for i := 0; i < len(movie.Cast); i++{
-		//inserting only if there is no data of a cast member exist in the table 
+	for i := 0 ; i < len(movie.Crew) ; i++ {
+		//inserting only if there is no data of a crew member exist in the table 
 		statement,err = Db.Prepare("INSERT INTO crew(crew_member_id, name, role, poster) SELECT $1, $2, $3, $4 WHERE NOT EXISTS (SELECT * FROM crew WHERE crew_member_id = $5);")
 		if err!= nil{
 			fmt.Fprintf(w,"error in sql query crew")
@@ -328,10 +372,11 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 		}
 		_,err = statement.Exec(movie.Crew[i].Crew_member_id, movie.Crew[i].Name, movie.Crew[i].Role, movie.Crew[i].Poster,movie.Crew[i].Crew_member_id)
 		if err!= nil{
-			fmt.Fprintf(w,"error in sql query exe crew 1")
+			fmt.Fprintln(w,err)
+			w.WriteHeader(http.StatusBadRequest)
 			return 
 		}
-		//inseting cast members of a movie in the table and this table contains the movieid and the crew memberid of that film
+		//inseting crew members of a movie in the table and this table contains the movieid and the crew memberid of that film
 		statement,err = Db.Prepare("insert into movie_crew(movie_id,crew_member_id) values($1,$2)")
 		if err!= nil{
 			fmt.Fprintf(w,"error in sql query movie_crew")
@@ -339,8 +384,9 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 		}
 		_,err = statement.Exec(movie.Movie_id,movie.Crew[i].Crew_member_id)
 		if err!= nil{
-			fmt.Fprintf(w,"error in sql query exe crew 2")
-			return 
+			fmt.Fprintln(w,err)
+			w.WriteHeader(http.StatusBadRequest)
+			return
 		}
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -354,7 +400,7 @@ func GetMovieDataByName(w http.ResponseWriter, r *http.Request) {
 	vars :=mux.Vars(r)
 	tc := cases.Title(language.English)
 	movieName := tc.String(vars["name"]) //will be getting the movie name from the url
-	reqmovie:=GetMovieIdList("movie","title",movieName) 
+	reqmovie:=GetMovieIdListOnName(movieName) 
 	if reqmovie!=nil{
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(reqmovie)
@@ -364,6 +410,19 @@ func GetMovieDataByName(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	
+}
+
+func GetMovieIdListOnName(movieName string) []retrieveMovData{
+	var movies_id []string
+	var movie_id string
+	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE title LIKE '%' || $1 || '%';")		// '||' will concate the string
+	rows,_ := statement.Query(movieName)
+	for rows.Next(){
+		_ = rows.Scan(&movie_id)
+		movies_id = append(movies_id, movie_id)
+	}
+	movies,_:= RetriveDataOnMovie_id(movies_id)
+	return movies
 }
 
 func UpdateMovieRating(w http.ResponseWriter, r *http.Request){
