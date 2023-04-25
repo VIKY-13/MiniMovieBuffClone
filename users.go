@@ -42,11 +42,15 @@ func CreateNewUser(w http.ResponseWriter, r *http.Request){
 }
 
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request){
-	var existingUserUpdate user
-	json.NewDecoder(r.Body).Decode(&existingUserUpdate)
-	_,err := Db.Exec("update users set firstname=$1,lastname=$2,password=$3,age=$4,phone_no=$5 where user_id=$6",existingUserUpdate.Firstname,existingUserUpdate.Lastname,existingUserUpdate.Password,existingUserUpdate.Age,existingUserUpdate.Phone_no,existingUserUpdate.User_id)
-	CheckInternalServerError(w,err,"error in updating user")
+	var existingUser_UserId string
+	var existingUserUpdateData user
+	json.NewDecoder(r.Body).Decode(&existingUserUpdateData)
+	err := Db.QueryRow("select user_id from users where email=$1;",existingUserUpdateData.Email).Scan(&existingUser_UserId)
+	CheckInternalServerError(w,err,"error in query")
+	_,err = Db.Exec("update users set firstname=$1,lastname=$2,password=$3,age=$4,phone_no=$5 where user_id=$6",existingUserUpdateData.Firstname,existingUserUpdateData.Lastname,existingUserUpdateData.Password,existingUserUpdateData.Age,existingUserUpdateData.Phone_no,existingUser_UserId)
+	CheckInternalServerError(w,err,"in updating")
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(existingUserUpdateData)
 }
 
 func HashPassword(password string) (string, error) {
