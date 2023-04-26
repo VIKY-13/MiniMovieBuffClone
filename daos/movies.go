@@ -23,7 +23,7 @@ func Init(DbConn *sql.DB) *sql.DB{
 func GetMovieIdListOnCast(castMember string) []dtos.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
-	statement,_ := Db.Prepare("select mc.movie_id from movie_cast mc inner join casts c on mc.cast_member_id=c.cast_member_id and c.name= $1 ;")
+	statement,_ := Db.Prepare("SELECT mc.movie_id FROM movie_cast mc INNER JOIN casts c ON mc.cast_member_id=c.cast_member_id AND c.name= $1 ;")
 	rows,_ := statement.Query(castMember)
 	for rows.Next(){
 		_ = rows.Scan(&movie_id)
@@ -36,7 +36,7 @@ func GetMovieIdListOnCast(castMember string) []dtos.RetrieveMovData{
 func GetMovieIdListOnYear(year string) []dtos.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
-	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE date_part('year', release_date) = $1;")
+	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE date_part('year', release_date) = $1;")
 	rows,_ := statement.Query(year)
 	for rows.Next(){
 		_ = rows.Scan(&movie_id)
@@ -63,7 +63,7 @@ func GetAllMovieIdList()[]dtos.RetrieveMovData{
 func GetMovieIdListOnLanguage(language string) []dtos.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
-	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE language_name = $1;")
+	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE language_name = $1;")
 	rows,_ := statement.Query(language)
 	for rows.Next(){
 		_ = rows.Scan(&movie_id)
@@ -76,7 +76,7 @@ func GetMovieIdListOnLanguage(language string) []dtos.RetrieveMovData{
 func GetMovieIdListOnCertification(certification string) []dtos.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
-	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE certification = $1;")
+	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE certification = $1;")
 	rows,_ := statement.Query(certification)
 	for rows.Next(){
 		_ = rows.Scan(&movie_id)
@@ -92,7 +92,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 		var reqMovie dtos.RetrieveMovData
 		//new code
 		//in the below statement we conntect 3 tables movie,running_time & genre of the movie 
-		statement,err := Db.Prepare("select m.*, mg.genre from movie m inner join movie_genre mg on m.movie_id= mg.movie_id and m.movie_id= $1 ;")
+		statement,err := Db.Prepare("SELECT m.*, mg.genre FROM movie m INNER JOIN movie_genre mg ON m.movie_id= mg.movie_id AND m.movie_id= $1 ;")
 		if err!= nil{
 			fmt.Println("error in sql query movie")
 			return movies,err
@@ -112,7 +112,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 			reqMovie.Genres = append(reqMovie.Genres, genre)
 		}
 		//here we'll e getting the photos url
-		statement,err = Db.Prepare("select distinct photos_url from movie_photos where movie_id =$1")
+		statement,err = Db.Prepare("SELECT DISTINCT photos_url FROM movie_photos WHERE movie_id =$1")
 		var photo_url string
 		if err!=nil{
 			fmt.Println("error in photos query")
@@ -124,7 +124,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 			reqMovie.Photos = append(reqMovie.Photos, photo_url)
 		}
 		//here we'll be getting the trailer url
-		statement,err = Db.Prepare("select distinct trailer_url from movie_trailer where movie_id =$1")
+		statement,err = Db.Prepare("SELECT DISTINCT trailer_url FROM movie_trailer WHERE movie_id =$1")
 		var trailer_url string
 		if err!=nil{
 			fmt.Println("error in trailer query")
@@ -136,7 +136,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 			reqMovie.Trailers = append(reqMovie.Trailers, trailer_url)
 		}
 		//in here we get the cast data by connecting movie_cast and casts table 
-		statement,err = Db.Prepare("select c.name,c.role,c.cast_member_id,c.poster from movie_cast mc inner join casts c on mc.movie_id= $1 and mc.cast_member_id=c.cast_member_id;")
+		statement,err = Db.Prepare("SELECT c.name,c.role,c.cast_member_id,c.poster FROM movie_cast mc INNER JOIN casts c ON mc.movie_id= $1 AND mc.cast_member_id=c.cast_member_id;")
 		if err!=nil{
 			fmt.Println("error in cast query")
 			return movies,err
@@ -153,7 +153,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 			reqMovie.Cast = append(reqMovie.Cast, castMember)
 		}
 		//here we get the crew data by connecting the movie_crew and crew table
-		statement,err = Db.Prepare("select cr.name,cr.role,cr.crew_member_id,cr.poster from movie_crew mcr inner join crew cr on mcr.movie_id= $1 and mcr.crew_member_id=cr.crew_member_id")
+		statement,err = Db.Prepare("SELECT cr.name,cr.role,cr.crew_member_id,cr.poster FROM movie_crew mcr INNER JOIN crew cr ON mcr.movie_id= $1 AND mcr.crew_member_id=cr.crew_member_id")
 		if err!=nil{
 			fmt.Println("error in crew query")
 			return movies,err
@@ -177,7 +177,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 		}
 		_ = statement.QueryRow(movies_id[i]).Scan(&reqMovie.OverallUserRating)
 		//getting all user reviews for this movie
-		statement,err = Db.Prepare("select u.firstname, r.review, r.rating from users u inner join reviews r on r.movie_id=$1 and  r.user_id=u.user_id;")
+		statement,err = Db.Prepare("SELECT u.firstname, r.review, r.rating FROM users u INNER JOIN reviews r ON r.movie_id=$1 AND  r.user_id=u.user_id;")
 		if err != nil{
 			fmt.Println("error in getting all user reviews")
 			return movies,err
@@ -197,7 +197,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 func GetMovieIdListOnName(movieName string) []dtos.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
-	statement,_ := Db.Prepare("SELECT distinct movie_id FROM movie WHERE title LIKE '%' || $1 || '%';")		// '||' will concate the string
+	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE title LIKE '%' || $1 || '%';")		// '||' will concate the string
 	rows,_ := statement.Query(movieName)
 	for rows.Next(){
 		_ = rows.Scan(&movie_id)

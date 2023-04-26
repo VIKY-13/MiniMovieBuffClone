@@ -28,7 +28,7 @@ func GetMovieIdListOnUserWatchlist(user_id string) ([]dtos.RetrieveMovData,error
 }
 
 func AddMovieToUserWatchlistDb(addToWatchList dtos.Favourite) error{
-	statement,err := Db.Prepare("insert into watchlist(user_id,movie_id) values($1,$2)")
+	statement,err := Db.Prepare("INSERT INTO watchlist(user_id,movie_id) VALUES ($1,$2)")
 	if err != nil{
 		return err
 	}
@@ -40,7 +40,7 @@ func AddMovieToUserWatchlistDb(addToWatchList dtos.Favourite) error{
 }
 
 func RemoveMovieFromWatchlistDb(removeFromWatchlist dtos.Favourite) error{
-	statement,err := Db.Prepare("DELETE from watchlist where movie_id=$1 and user_id=$2")
+	statement,err := Db.Prepare("DELETE FROM watchlist WHERE movie_id=$1 AND user_id=$2")
 	if err != nil{
 		return err
 	}

@@ -7,7 +7,7 @@ import (
 )
 
 func AddMovieToUserFavouriteDb(addFavourite dtos.Favourite) error{
-	statement,err := Db.Prepare("insert into favourite(user_id,movie_id) values($1,$2)")
+	statement,err := Db.Prepare("INSERT INTO favourite(user_id,movie_id) VALUES($1,$2)")
 	if err != nil{
 		return err
 	}
@@ -21,7 +21,7 @@ func AddMovieToUserFavouriteDb(addFavourite dtos.Favourite) error{
 func GetMovieIdListOnUserFavourite(user_id string) []dtos.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
-	statement,_ := Db.Prepare("SELECT distinct movie_id FROM favourite WHERE user_id = $1;")
+	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM favourite WHERE user_id = $1;")
 	rows,_ := statement.Query(user_id)
 	for rows.Next(){
 		_ = rows.Scan(&movie_id)
@@ -32,7 +32,7 @@ func GetMovieIdListOnUserFavourite(user_id string) []dtos.RetrieveMovData{
 }
 
 func RemoveMovieFromFavouriteDb(removeFavourite dtos.Favourite) error{
-	statement,err := Db.Prepare("DELETE from favourite where movie_id= $1 and user_id= $2")
+	statement,err := Db.Prepare("DELETE FROM favourite WHERE movie_id= $1 AND user_id= $2")
 	if err != nil{
 		return err
 	}

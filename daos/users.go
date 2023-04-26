@@ -9,7 +9,7 @@ import (
 )
 
 func AddNewUserToDb(newUser dtos.User)error{
-	statement,err := Db.Prepare("insert into users(user_id,firstname,lastname,email,password,age,phone_no) values($1,$2,$3,$4,$5,$6,$7)")
+	statement,err := Db.Prepare("INSERT INTO users(user_id,firstname,lastname,email,password,age,phone_no) VALUES ($1,$2,$3,$4,$5,$6,$7)")
 	if err != nil{
 		return err
 	}
@@ -35,7 +35,7 @@ func CheckUserAlreadyExist(newUserEmail string)error{
 }
 
 func UpdateExistingUser(existingUserUpdateData dtos.User)error{
-	statement,err := Db.Prepare("update users set firstname=$1,lastname=$2,password=$3,age=$4,phone_no=$5 where user_id=$6")
+	statement,err := Db.Prepare("UPDATE users SET firstname=$1,lastname=$2,password=$3,age=$4,phone_no=$5 WHERE user_id=$6")
 	if err != nil{
 		return nil
 	}
@@ -47,7 +47,7 @@ func UpdateExistingUser(existingUserUpdateData dtos.User)error{
 }
 
 func GetUserData(userLoginEmail string,verifyUserLoginCredentials dtos.User)(dtos.User,error){
-	statement,err := Db.Prepare("select user_id,firstname,lastname,phone_no,age,email,password from users where email= $1;")
+	statement,err := Db.Prepare("SELECT user_id,firstname,lastname,phone_no,age,email,password FROM users WHERE email= $1;")
 	if err != nil{
 		return verifyUserLoginCredentials,err
 	}
