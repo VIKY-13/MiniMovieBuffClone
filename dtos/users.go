@@ -1,7 +1,7 @@
 package dtos
 
 //create user structures
-type user struct{
+type User struct{
 	User_id string `json:"user_id"`
 	Firstname string `json:"firstname"`
 	Lastname string `json:"lastname"`
@@ -12,13 +12,13 @@ type user struct{
 }
 
 //user login struct
-type userlogin struct{
+type UserLogin struct{
 	Useremail string `json:"useremail"`
 	Password string `json:"password"`
 }
 
 //favourite,watchlist structure
-type favourite struct{
+type Favourite struct{
 	User_id string `json:"user_id"`
 	Movie_id string `json:"movie_id"`
 }

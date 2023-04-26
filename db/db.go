@@ -5,7 +5,6 @@ import(
 	_ "github.com/lib/pq"
 	"database/sql"
 	"golangmovietask/config"
-	// "os"
 )
 
 func DatabaseConnection()(*sql.DB,error){

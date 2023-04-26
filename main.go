@@ -1,19 +1,17 @@
 package main
 
 import (
-	"database/sql"
-	// "encoding/json"
 	"fmt"
-	"html/template"
-	// "io/ioutil"
+	"golangmovietask/config"
+	"golangmovietask/controllers"
+	"golangmovietask/daos"
+	"golangmovietask/db"
+	"golangmovietask/middlewares"
+	"github.com/joho/godotenv"
+	"log"
 	"net/http"
-	"os"
-	// "strings"
 
 	"github.com/gorilla/mux"
-	"github.com/joho/godotenv"
-	// _ "github.com/joho/godotenv"
-
 	_ "github.com/lib/pq"
 )
 
@@ -23,17 +21,22 @@ moviestructure from dto = movdata
 post method = createdata
 */
 
-
-var Db *sql.DB
 // var err error
-var templ *template.Template
 
 func main() {
 	//DB connection
 	err := godotenv.Load(".env")
-	checkErr(err)
-	port := os.Getenv("PORT")
-	DatabaseConnection()
+	if err != nil {
+		panic(err)
+	}
+	Db,err :=db.DatabaseConnection()
+	if err != nil{
+		log.Fatal("failed to connect Database")
+		return
+	}
+	fmt.Println("connected to Db")
+	defer Db.Close()
+	daos.Init(Db)
 	//server up process
 	r:= mux.NewRouter()
 	r.Use(func(next http.Handler) http.Handler {
@@ -42,43 +45,32 @@ func main() {
             next.ServeHTTP(w, r)
         })
     })
-
 	fmt.Println("starting server")
-	r.HandleFunc("/movie/explore", ExploreMovies).Methods("GET")
+	r.HandleFunc("/movie/explore", controllers.ExploreMovies).Methods("GET")
 	r.HandleFunc("/",welcome).Methods("GET")
-	r.HandleFunc("/movie/rating/update", UpdateMovieRating).Methods("PUT")
-	r.HandleFunc("/movie/rating/new", PostMovieRating).Methods("POST")
-	r.HandleFunc("/user/login", UserLogin).Methods("POST")
-	r.HandleFunc("/user/update", UpdateUserProfile).Methods("PUT")
-	r.HandleFunc("/movie/create/{name}", HostAuthentication(PostNewMovieData)).Methods("POST")
-	r.HandleFunc("/movie/getmoviebyname/{name}", GetMovieDataByName).Methods("GET")
-	r.HandleFunc("/minimoviebuff/endpoints", APIDocumentation).Methods("GET")
-	r.HandleFunc("/movie/", GetMovieDataByQueryParams).Methods("GET")
-	r.HandleFunc("/user/create",CreateNewUser).Methods("POST")
-	r.HandleFunc("/user/watchlist/add",AddMovieToUserWatchlist).Methods("POST")
-	r.HandleFunc("/user/watchlist/remove",RemoveMovieFromUserWatchlist).Methods("DELETE")
-	r.HandleFunc("/user/watchlist",GetUserWatchlist).Methods("GET")
-	r.HandleFunc("/user/favourites",GetUserFavourites).Methods("GET")
-	r.HandleFunc("/user/favourite/add",AddUserFavourite).Methods("POST")
-	r.HandleFunc("/user/favourite/remove",RemoveUserFavourite).Methods("DELETE")
-	http.ListenAndServe(":"+port, r)
+	r.HandleFunc("/movie/rating/update", controllers.UpdateMovieRating).Methods("PUT")
+	r.HandleFunc("/movie/rating/new", controllers.PostMovieRating).Methods("POST")
+	r.HandleFunc("/user/login", controllers.UserLogin).Methods("POST")
+	r.HandleFunc("/user/update", controllers.UpdateUserProfile).Methods("PUT")
+	r.HandleFunc("/movie/create/{name}", middlewares.HostAuthentication(controllers.PostNewMovieData)).Methods("POST")
+	r.HandleFunc("/movie/getmoviebyname/{name}", controllers.GetMovieDataByName).Methods("GET")
+	r.HandleFunc("/minimoviebuff/endpoints", controllers.APIDocumentation).Methods("GET")
+	r.HandleFunc("/movie/", controllers.GetMovieDataByQueryParams).Methods("GET")
+	r.HandleFunc("/user/create",controllers.CreateNewUser).Methods("POST")
+	r.HandleFunc("/user/watchlist/add",controllers.AddMovieToUserWatchlist).Methods("POST")
+	r.HandleFunc("/user/watchlist/remove",controllers.RemoveMovieFromUserWatchlist).Methods("DELETE")
+	r.HandleFunc("/user/watchlist",controllers.GetUserWatchlist).Methods("GET")
+	r.HandleFunc("/user/favourites",controllers.GetUserFavourites).Methods("GET")
+	r.HandleFunc("/user/favourite/add",controllers.AddUserFavourite).Methods("POST")
+	r.HandleFunc("/user/favourite/remove",controllers.RemoveUserFavourite).Methods("DELETE")
+	err = http.ListenAndServe(config.HOST_PORT, r)
+	checkErr(err)
 }
 
 func welcome(w http.ResponseWriter, r *http.Request){
 	fmt.Fprintf(w,"welcome")
 }
 
-func DatabaseConnection(){
-	db_host,db_port,db_user,db_password,db_name := os.Getenv("DB_HOST"),os.Getenv("DB_PORT"),os.Getenv("DB_USER"),os.Getenv("DB_PASSWORD"),os.Getenv("DB_NAME")
-	postgresqlDbInfo := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", db_host, db_port, db_user, db_password, db_name)
-	db, err := sql.Open("postgres", postgresqlDbInfo) //make the connection
-	checkErr(err)
-	// defer db.Close()
-	err = db.Ping() // checks
-	checkErr(err)
-	Db = db
-	fmt.Println("Connected to the Database")
-}
 
 // error check function
 func checkErr(err error) {

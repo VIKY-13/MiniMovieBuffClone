@@ -22,7 +22,7 @@ type SampleReqRes struct{
 	Response string `json:"response"`
 }
 
-type documentationparsedata struct{
+type DocumentationParseData struct{
 	Title string
 	Endpointsdata EndpointsHead
 }
