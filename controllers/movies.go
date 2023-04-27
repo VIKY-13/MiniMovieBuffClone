@@ -12,6 +12,7 @@ import (
 	"golang.org/x/text/language"
 )
 
+//This function returns all the movies in the Db
 func ExploreMovies(w http.ResponseWriter, r *http.Request){
 	movies := daos.GetAllMovieIdList()
 	w.Header().Set("content-type","application/json")
@@ -107,6 +108,7 @@ func UpdateMovieRating(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	w.WriteHeader(http.StatusOK)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(updateRating)
 }
 
@@ -120,5 +122,6 @@ func PostMovieRating(w http.ResponseWriter, r *http.Request){
 		return
 	}
 	w.WriteHeader(http.StatusCreated)
+	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(ratingData)
 }

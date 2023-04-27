@@ -42,23 +42,39 @@ func CreateNewUser(w http.ResponseWriter, r *http.Request){
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request){
 	var existingUserUpdateData dtos.User
 
-	//after login only we'll be able to update, consideering that perspective we alredy have the user data which we return when the user logs in which contains the user_id too.
+	//after login only we'll be able to update, considering that perspective we alredy have the user data which we return when the user logs in which contains the user_id too.
 	json.NewDecoder(r.Body).Decode(&existingUserUpdateData)
-	hashedPassword , err := services.HashPassword(existingUserUpdateData.Password)
+	//As we don't have an OTP and E-Mail functionality for the password changeing purpose we dont allow the user to update the password nd email, if we needed we can add the Email change.
+	password,err := daos.GetUserPassword(existingUserUpdateData.User_id)
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintln(w,err)
 		return 
 	}
-	existingUserUpdateData.Password = hashedPassword
-	err = daos.UpdateExistingUser(existingUserUpdateData)
-	if err != nil{
-		w.WriteHeader(http.StatusInternalServerError)
-		fmt.Println("error in updating Db")
+	err = services.ComparePassword(password,existingUserUpdateData.Password)	//only if the password matches we can update the user details
+	if err == nil{
+		hashedPassword , err := services.HashPassword(existingUserUpdateData.Password)
+		if err != nil{
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Fprintln(w,err)
+			return 
+		}
+		existingUserUpdateData.Password = hashedPassword
+		err = daos.UpdateExistingUser(existingUserUpdateData)
+		if err != nil{
+			w.WriteHeader(http.StatusInternalServerError)
+			fmt.Println("error in updating Db")
+			return 
+		}
+		existingUserUpdateData.Password = ""
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(existingUserUpdateData)
+	}else{
+		w.WriteHeader(http.StatusUnauthorized)
+		fmt.Fprintln(w,"user password not matched")
 		return 
 	}
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(existingUserUpdateData)
 }
 
 
@@ -90,7 +106,6 @@ func UserLogin(w http.ResponseWriter, r *http.Request){
 		w.WriteHeader(http.StatusUnauthorized)
 		return
 	}
-	
 }
 
 

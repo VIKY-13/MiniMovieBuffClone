@@ -35,16 +35,30 @@ func CheckUserAlreadyExist(newUserEmail string)error{
 }
 
 func UpdateExistingUser(existingUserUpdateData dtos.User)error{
-	statement,err := Db.Prepare("UPDATE users SET firstname=$1,lastname=$2,password=$3,age=$4,phone_no=$5 WHERE user_id=$6")
+	statement,err := Db.Prepare("UPDATE users SET firstname=$1,lastname=$2,age=$3,phone_no=$4 WHERE user_id=$5")
 	if err != nil{
 		return nil
 	}
-	_,err = statement.Exec(existingUserUpdateData.Firstname,existingUserUpdateData.Lastname,existingUserUpdateData.Password,existingUserUpdateData.Age,existingUserUpdateData.Phone_no,existingUserUpdateData.User_id)
+	_,err = statement.Exec(existingUserUpdateData.Firstname,existingUserUpdateData.Lastname,existingUserUpdateData.Age,existingUserUpdateData.Phone_no,existingUserUpdateData.User_id)
 	if err != nil{
 		return err
 	}
 	return err
 }
+
+func GetUserPassword(user_id string)(string,error){
+	var password string
+	statement,err := Db.Prepare("SELECT password FROM users WHERE user_id = $1")
+	if err != nil{
+		return "",err
+	}
+	err = statement.QueryRow(user_id).Scan(&password)
+	if err != nil{
+		return "",err
+	}
+	return password,nil
+}
+
 
 func GetUserData(userLoginEmail string,verifyUserLoginCredentials dtos.User)(dtos.User,error){
 	statement,err := Db.Prepare("SELECT user_id,firstname,lastname,phone_no,age,email,password FROM users WHERE email= $1;")
