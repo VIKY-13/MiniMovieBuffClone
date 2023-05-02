@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"golangmovietask/daos"
 	"golangmovietask/dtos"
+	"golangmovietask/models"
 	"net/http"
 
 	"github.com/gorilla/mux"
@@ -26,7 +27,7 @@ func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
 	language := tc.String(r.URL.Query().Get("language"))
 	year := tc.String(r.URL.Query().Get("year"))
 	certification := tc.String(r.URL.Query().Get("certification"))
-	var movies []dtos.RetrieveMovData
+	var movies []models.RetrieveMovData
 	if(language!=""){
 		movies=daos.GetMovieIdListOnLanguage(language)
 	}else if (year!=""){
@@ -99,7 +100,7 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 }
 
 func UpdateMovieRating(w http.ResponseWriter, r *http.Request){
-	var updateRating dtos.MoieRating
+	var updateRating models.MoieRating
 	json.NewDecoder(r.Body).Decode(&updateRating)
 	err := daos.UpdateMovieRatingInDb(updateRating)
 	if err != nil{
@@ -113,7 +114,7 @@ func UpdateMovieRating(w http.ResponseWriter, r *http.Request){
 }
 
 func PostMovieRating(w http.ResponseWriter, r *http.Request){
-	var ratingData dtos.MoieRating
+	var ratingData models.MoieRating
 	json.NewDecoder(r.Body).Decode(&ratingData)
 	err := daos.PostMovieRatingInDb(ratingData)
 	if err != nil{

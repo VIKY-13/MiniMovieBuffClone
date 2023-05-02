@@ -1,4 +1,4 @@
-package dtos
+package models
 
 //these structs are for APIDocumentations
 type EndpointsHead struct{

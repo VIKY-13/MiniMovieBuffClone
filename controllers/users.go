@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"golangmovietask/daos"
-	"golangmovietask/dtos"
+	"golangmovietask/models"
 	"golangmovietask/services"
 	"net/http"
 
@@ -14,7 +14,7 @@ import (
 
 //user creation
 func CreateNewUser(w http.ResponseWriter, r *http.Request){
-	var newUser dtos.User
+	var newUser models.User
 	newUser.User_id = uuid.New().String()
 	json.NewDecoder(r.Body).Decode(&newUser)
 	//checking whether the user already exists
@@ -40,7 +40,7 @@ func CreateNewUser(w http.ResponseWriter, r *http.Request){
 }
 
 func UpdateUserProfile(w http.ResponseWriter, r *http.Request){
-	var existingUserUpdateData dtos.User
+	var existingUserUpdateData models.User
 
 	//after login only we'll be able to update, considering that perspective we alredy have the user data which we return when the user logs in which contains the user_id too.
 	json.NewDecoder(r.Body).Decode(&existingUserUpdateData)
@@ -81,8 +81,8 @@ func UpdateUserProfile(w http.ResponseWriter, r *http.Request){
 
 //USER LOGIN
 func UserLogin(w http.ResponseWriter, r *http.Request){
-	var userLoginCredentials dtos.UserLogin		//this variable is for getting the data from the user
-	var verifyUserLoginCredentials dtos.User		//this variable is for getting the data from the DB and doing the calculations
+	var userLoginCredentials models.UserLogin		//this variable is for getting the data from the user
+	var verifyUserLoginCredentials models.User		//this variable is for getting the data from the DB and doing the calculations
 	err := json.NewDecoder(r.Body).Decode(&userLoginCredentials)
 	if err != nil{
 		fmt.Println("error in mapping data")

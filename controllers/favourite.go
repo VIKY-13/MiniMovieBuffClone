@@ -5,12 +5,12 @@ import(
 	"fmt"
 	"net/http"
 	"golangmovietask/daos"
-	"golangmovietask/dtos"
+	"golangmovietask/models"
 
 )
 
 func AddUserFavourite(w http.ResponseWriter, r *http.Request){
-	var addFavourite dtos.Favourite
+	var addFavourite models.Favourite
 	json.NewDecoder(r.Body).Decode(&addFavourite)
 	err := daos.AddMovieToUserFavouriteDb(addFavourite)
 	if err!= nil{
@@ -22,7 +22,7 @@ func AddUserFavourite(w http.ResponseWriter, r *http.Request){
 }
 
 func GetUserFavourites(w http.ResponseWriter, r *http.Request){
-	var userFavourite dtos.Favourite
+	var userFavourite models.Favourite
 	json.NewDecoder(r.Body).Decode(&userFavourite)
 	movies := daos.GetMovieIdListOnUserFavourite(userFavourite.User_id)
 	w.Header().Set("Content-Type", "application/json")
@@ -31,7 +31,7 @@ func GetUserFavourites(w http.ResponseWriter, r *http.Request){
 }
 
 func RemoveUserFavourite(w http.ResponseWriter, r *http.Request){
-	var removeFavourite dtos.Favourite
+	var removeFavourite models.Favourite
 	json.NewDecoder(r.Body).Decode(&removeFavourite)
 	err := daos.RemoveMovieFromFavouriteDb(removeFavourite)
 	if err!= nil{

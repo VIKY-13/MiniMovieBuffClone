@@ -1,13 +1,13 @@
 package daos
 
 import (
-	"golangmovietask/dtos"
+	"golangmovietask/models"
 
 	_ "github.com/lib/pq"
 )
 
 
-func GetMovieIdListOnUserWatchlist(user_id string) ([]dtos.RetrieveMovData,error){
+func GetMovieIdListOnUserWatchlist(user_id string) ([]models.RetrieveMovData,error){
 	var movies_id []string
 	var movie_id string
 	statement,err := Db.Prepare("SELECT distinct movie_id FROM watchlist WHERE user_id = $1;")
@@ -27,7 +27,7 @@ func GetMovieIdListOnUserWatchlist(user_id string) ([]dtos.RetrieveMovData,error
 	return movies,nil
 }
 
-func AddMovieToUserWatchlistDb(addToWatchList dtos.Favourite) error{
+func AddMovieToUserWatchlistDb(addToWatchList models.Favourite) error{
 	statement,err := Db.Prepare("INSERT INTO watchlist(user_id,movie_id) VALUES ($1,$2)")
 	if err != nil{
 		return err
@@ -39,7 +39,7 @@ func AddMovieToUserWatchlistDb(addToWatchList dtos.Favourite) error{
 	return nil
 }
 
-func RemoveMovieFromWatchlistDb(removeFromWatchlist dtos.Favourite) error{
+func RemoveMovieFromWatchlistDb(removeFromWatchlist models.Favourite) error{
 	statement,err := Db.Prepare("DELETE FROM watchlist WHERE movie_id=$1 AND user_id=$2")
 	if err != nil{
 		return err

@@ -5,7 +5,7 @@ import(
 	"net/http"
 	"strings"
 	"io/ioutil"
-	"golangmovietask/dtos"
+	"golangmovietask/models"
 	"html/template"
 
 )
@@ -21,10 +21,10 @@ func APIDocumentation(w http.ResponseWriter, r *http.Request){
 		w.WriteHeader(http.StatusInternalServerError)
 		return
 	}	
-	endspointsdata := dtos.EndpointsHead{}
+	endspointsdata := models.EndpointsHead{}
 	json.Unmarshal(content,&endspointsdata)
-	s:=dtos.DocumentationParseData{Title: title,Endpointsdata: endspointsdata}
-	templ = template.Must(template.ParseFiles("index.html"))
+	s:=models.DocumentationParseData{Title: title,Endpointsdata: endspointsdata}
+	templ = template.Must(template.ParseFiles("views/index.html"))
 	err = templ.Execute(w,s)
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)

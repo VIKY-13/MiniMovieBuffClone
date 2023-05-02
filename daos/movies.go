@@ -5,9 +5,9 @@ import (
 	"errors"
 	"fmt"
 
-	// "golangmovietask/dtos"
+	// "golangmovietask/models"
+	"golangmovietask/models"
 	"golangmovietask/dtos"
-
 	_ "github.com/lib/pq"
 )
 
@@ -20,7 +20,7 @@ func Init(DbConn *sql.DB) *sql.DB{
 
 //To avoid Sql Injection problem we use separate function for each queries
 
-func GetMovieIdListOnCast(castMember string) []dtos.RetrieveMovData{
+func GetMovieIdListOnCast(castMember string) []models.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
 	statement,_ := Db.Prepare("SELECT mc.movie_id FROM movie_cast mc INNER JOIN casts c ON mc.cast_member_id=c.cast_member_id AND c.name= $1 ;")
@@ -33,7 +33,7 @@ func GetMovieIdListOnCast(castMember string) []dtos.RetrieveMovData{
 	return movies
 }
 
-func GetMovieIdListOnYear(year string) []dtos.RetrieveMovData{
+func GetMovieIdListOnYear(year string) []models.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
 	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE date_part('year', release_date) = $1;")
@@ -46,7 +46,7 @@ func GetMovieIdListOnYear(year string) []dtos.RetrieveMovData{
 	return movies
 }
 
-func GetAllMovieIdList()[]dtos.RetrieveMovData{
+func GetAllMovieIdList()[]models.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
 	statement,_ := Db.Prepare("SELECT movie_id FROM movie ORDER BY release_date desc;")
@@ -60,7 +60,7 @@ func GetAllMovieIdList()[]dtos.RetrieveMovData{
 }
 
 
-func GetMovieIdListOnLanguage(language string) []dtos.RetrieveMovData{
+func GetMovieIdListOnLanguage(language string) []models.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
 	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE language_name = $1;")
@@ -73,7 +73,7 @@ func GetMovieIdListOnLanguage(language string) []dtos.RetrieveMovData{
 	return movies
 }
 
-func GetMovieIdListOnCertification(certification string) []dtos.RetrieveMovData{
+func GetMovieIdListOnCertification(certification string) []models.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
 	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE certification = $1;")
@@ -86,10 +86,10 @@ func GetMovieIdListOnCertification(certification string) []dtos.RetrieveMovData{
 	return movies
 }
 
-func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
-	var movies []dtos.RetrieveMovData 
+func RetriveDataOnMovie_id(movies_id []string)([]models.RetrieveMovData ,error){
+	var movies []models.RetrieveMovData 
 	for i:=0;i<len(movies_id);i++{
-		var reqMovie dtos.RetrieveMovData
+		var reqMovie models.RetrieveMovData
 		//new code
 		//in the below statement we conntect 3 tables movie,running_time & genre of the movie 
 		statement,err := Db.Prepare("SELECT m.*, mg.genre FROM movie m INNER JOIN movie_genre mg ON m.movie_id= mg.movie_id AND m.movie_id= $1 ;")
@@ -143,7 +143,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 		}
 		rows,_ = statement.Query(movies_id[i])
 		defer rows.Close()
-		var castMember dtos.Cast //created to use this and append them to the movie.cast structure
+		var castMember models.Cast //created to use this and append them to the movie.cast structure
 		for rows.Next() {
 			err = rows.Scan(&castMember.Name, &castMember.Role, &castMember.Cast_member_id, &castMember.Poster)
 			if err!= nil{
@@ -160,7 +160,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 		}
 		rows,_ = statement.Query(movies_id[i])
 		defer rows.Close()
-		var crewMember dtos.Crew //created to use this and append them to the reqMovie.crew structure
+		var crewMember models.Crew //created to use this and append them to the reqMovie.crew structure
 		for rows.Next() {
 			err = rows.Scan(&crewMember.Name, &crewMember.Role, &crewMember.Crew_member_id, &crewMember.Poster)
 			if err!= nil{
@@ -184,7 +184,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 		}
 		rows,_ = statement.Query(movies_id[i])
 		for rows.Next(){
-			var userReviews dtos.UserReviews
+			var userReviews models.UserReviews
 			_ = rows.Scan(&userReviews.Username,&userReviews.Review,&userReviews.Rating)
 			reqMovie.UserReviews= append(reqMovie.UserReviews, userReviews)
 		}
@@ -194,7 +194,7 @@ func RetriveDataOnMovie_id(movies_id []string)([]dtos.RetrieveMovData ,error){
 	return movies,nil
 }
 
-func GetMovieIdListOnName(movieName string) []dtos.RetrieveMovData{
+func GetMovieIdListOnName(movieName string) []models.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
 	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM movie WHERE title LIKE '%' || $1 || '%';")		// '||' will concate the string
@@ -317,7 +317,7 @@ func PostNewMovieDataToDb(movie dtos.MovData)error{
 	return nil
 }
 
-func UpdateMovieRatingInDb(updateRating dtos.MoieRating)error{
+func UpdateMovieRatingInDb(updateRating models.MoieRating)error{
 	statement,err := Db.Prepare("update reviews set rating=$1,review=$2 where user_id=$3 and movie_id=$4")
 	if err != nil{
 		return err
@@ -329,7 +329,7 @@ func UpdateMovieRatingInDb(updateRating dtos.MoieRating)error{
 	return nil
 }
 
-func PostMovieRatingInDb(ratingData dtos.MoieRating)error{
+func PostMovieRatingInDb(ratingData models.MoieRating)error{
 	statement,err := Db.Prepare("INSERT INTO reviews(user_id,movie_id,rating,review) VALUES($1,$2,$3,$4)")
 	if err != nil{
 		return err

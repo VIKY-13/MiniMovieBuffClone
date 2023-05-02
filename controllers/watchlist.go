@@ -5,12 +5,12 @@ import(
 	"fmt"
 	"net/http"
 	"golangmovietask/daos"
-	"golangmovietask/dtos"
+	"golangmovietask/models"
 
 )
 
 func AddMovieToUserWatchlist(w http.ResponseWriter, r *http.Request){
-	var addToWatchList dtos.Favourite		//watchlist also uses same struct as favourite so we take that struct
+	var addToWatchList models.Favourite		//watchlist also uses same struct as favourite so we take that struct
 	json.NewDecoder(r.Body).Decode(&addToWatchList)
 	err := daos.AddMovieToUserWatchlistDb(addToWatchList)
 	if err!= nil{
@@ -22,7 +22,7 @@ func AddMovieToUserWatchlist(w http.ResponseWriter, r *http.Request){
 }
 
 func RemoveMovieFromUserWatchlist(w http.ResponseWriter, r *http.Request){
-	var removeFromWatchlist dtos.Favourite	//we use favourite structure as it requires the same
+	var removeFromWatchlist models.Favourite	//we use favourite structure as it requires the same
 	json.NewDecoder(r.Body).Decode(&removeFromWatchlist)
 	err := daos.RemoveMovieFromWatchlistDb(removeFromWatchlist)
 	if err!= nil{
@@ -34,7 +34,7 @@ func RemoveMovieFromUserWatchlist(w http.ResponseWriter, r *http.Request){
 }
 
 func GetUserWatchlist(w http.ResponseWriter, r *http.Request){
-	var userWatchlist dtos.Favourite
+	var userWatchlist models.Favourite
 	json.NewDecoder(r.Body).Decode(&userWatchlist)
 	movies,err := daos.GetMovieIdListOnUserWatchlist(userWatchlist.User_id)
 	if err != nil{

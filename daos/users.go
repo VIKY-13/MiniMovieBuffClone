@@ -2,13 +2,13 @@ package daos
 
 import (
 	"errors"
-	"golangmovietask/dtos"
+	"golangmovietask/models"
 	"strings"
 
 	_ "github.com/lib/pq"
 )
 
-func AddNewUserToDb(newUser dtos.User)error{
+func AddNewUserToDb(newUser models.User)error{
 	statement,err := Db.Prepare("INSERT INTO users(user_id,firstname,lastname,email,password,age,phone_no) VALUES ($1,$2,$3,$4,$5,$6,$7)")
 	if err != nil{
 		return err
@@ -34,7 +34,7 @@ func CheckUserAlreadyExist(newUserEmail string)error{
 	return nil
 }
 
-func UpdateExistingUser(existingUserUpdateData dtos.User)error{
+func UpdateExistingUser(existingUserUpdateData models.User)error{
 	statement,err := Db.Prepare("UPDATE users SET firstname=$1,lastname=$2,age=$3,phone_no=$4 WHERE user_id=$5")
 	if err != nil{
 		return nil
@@ -60,7 +60,7 @@ func GetUserPassword(user_id string)(string,error){
 }
 
 
-func GetUserData(userLoginEmail string,verifyUserLoginCredentials dtos.User)(dtos.User,error){
+func GetUserData(userLoginEmail string,verifyUserLoginCredentials models.User)(models.User,error){
 	statement,err := Db.Prepare("SELECT user_id,firstname,lastname,phone_no,age,email,password FROM users WHERE email= $1;")
 	if err != nil{
 		return verifyUserLoginCredentials,err

@@ -1,4 +1,4 @@
-package dtos
+package models
 
 //create user structures
 type User struct{

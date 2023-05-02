@@ -1,12 +1,12 @@
 package daos
 
 import (
-	"golangmovietask/dtos"
+	"golangmovietask/models"
 
 	_ "github.com/lib/pq"
 )
 
-func AddMovieToUserFavouriteDb(addFavourite dtos.Favourite) error{
+func AddMovieToUserFavouriteDb(addFavourite models.Favourite) error{
 	statement,err := Db.Prepare("INSERT INTO favourite(user_id,movie_id) VALUES($1,$2)")
 	if err != nil{
 		return err
@@ -18,7 +18,7 @@ func AddMovieToUserFavouriteDb(addFavourite dtos.Favourite) error{
 	return nil
 }
 
-func GetMovieIdListOnUserFavourite(user_id string) []dtos.RetrieveMovData{
+func GetMovieIdListOnUserFavourite(user_id string) []models.RetrieveMovData{
 	var movies_id []string
 	var movie_id string
 	statement,_ := Db.Prepare("SELECT DISTINCT movie_id FROM favourite WHERE user_id = $1;")
@@ -31,7 +31,7 @@ func GetMovieIdListOnUserFavourite(user_id string) []dtos.RetrieveMovData{
 	return movies
 }
 
-func RemoveMovieFromFavouriteDb(removeFavourite dtos.Favourite) error{
+func RemoveMovieFromFavouriteDb(removeFavourite models.Favourite) error{
 	statement,err := Db.Prepare("DELETE FROM favourite WHERE movie_id= $1 AND user_id= $2")
 	if err != nil{
 		return err
