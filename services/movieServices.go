@@ -1,4 +1,4 @@
-package controllers
+package services
 
 import (
 	"encoding/json"
@@ -8,40 +8,41 @@ import (
 	"golangmovietask/models"
 	"net/http"
 
-	"github.com/gorilla/mux"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
+	// "github.com/gorilla/mux"
+	// "golang.org/x/text/cases"
+	// "golang.org/x/text/language"
 )
 
-//This function returns all the movies in the Db
-func ExploreMovies(w http.ResponseWriter, r *http.Request){
-	movies := daos.GetAllMovieIdList()
-	w.Header().Set("content-type","application/json")
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(movies)
+type Service struct{
+	DAO *daos.DAO
 }
 
-func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
-	tc := cases.Title(language.English)
-	castMember := tc.String(r.URL.Query().Get("cast"))
-	language := tc.String(r.URL.Query().Get("language"))
-	year := tc.String(r.URL.Query().Get("year"))
-	certification := tc.String(r.URL.Query().Get("certification"))
+func (m *Service) ExploreMovieService(w http.ResponseWriter)([]models.RetrieveMovData,error){
+	movies,err := m.DAO.GetAllMovieIdList()
+	if err != nil{
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return nil,err
+	}
+	w.Header().Set("content-type","application/json")
+	w.WriteHeader(http.StatusOK)
+	return movies,nil
+}
+
+func (m *Service) GetMovieDataByQueryParamsService(w http.ResponseWriter,castMember,language,year,certification string){
 	var movies []models.RetrieveMovData
 	if(language!=""){
-		movies=daos.GetMovieIdListOnLanguage(language)
+		movies= m.DAO.GetMovieIdListOnLanguage(language)
 	}else if (year!=""){
-		movies=daos.GetMovieIdListOnYear(year)
+		movies= m.DAO.GetMovieIdListOnYear(year)
 	}else if (len(certification)!=0){
-		movies=daos.GetMovieIdListOnCertification(certification)
+		movies= m.DAO.GetMovieIdListOnCertification(certification)
 	}else if (castMember!= ""){
-		movies = daos.GetMovieIdListOnCast(castMember)
+		movies = m.DAO.GetMovieIdListOnCast(castMember)
 	}else{
 		w.WriteHeader(http.StatusBadRequest)
 		fmt.Fprintln(w,"Check the query")
 		return
 	}
-	// fmt.Print(movies)
 	w.Header().Set("content-type", "application/json")
 	if movies!=nil{
 		json.NewEncoder(w).Encode(movies)
@@ -52,13 +53,8 @@ func GetMovieDataByQueryParams(w http.ResponseWriter, r *http.Request){
 	}
 }
 
-// getting the data of the requested movie name
-func GetMovieDataByName(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintln(w,"movie name")
-	vars :=mux.Vars(r)
-	tc := cases.Title(language.English)
-	movieName := tc.String(vars["name"]) //will be getting the movie name from the url
-	reqmovie:=daos.GetMovieIdListOnName(movieName) 
+func (m *Service) GetMovieDataByNameService(w http.ResponseWriter, movieName string){
+	reqmovie,_:= m.DAO.GetMovieIdListOnName(movieName) 
 	if reqmovie!=nil{
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(reqmovie)
@@ -67,28 +63,25 @@ func GetMovieDataByName(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintf(w,"check the movie name")
 		return
 	}
-	
 }
 
-func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
-	var movie dtos.MovData
-	vars :=mux.Vars(r)
-	movieName := vars["name"]
+func (m *Service) PostNewMovieDataService(w http.ResponseWriter,movieName string){
 	baseURL := fmt.Sprintf("https://www.moviebuff.com/%s.json", movieName)
 	resp, err := http.Get(baseURL)
 	if err != nil{
 		w.WriteHeader(http.StatusBadGateway)
 		return
 	}
+	var movie dtos.MovData
 	json.NewDecoder(resp.Body).Decode(&movie)
 	//checking whether the data is already exist
-	err = daos.CheckMovieAlreadyExist(movie.Movie_id)
+	err = m.DAO.CheckMovieAlreadyExist(movie.Movie_id)
 	if err != nil{
 		w.WriteHeader(http.StatusConflict)
 		fmt.Fprintln(w,err)
 		return
 	}
-	err = daos.PostNewMovieDataToDb(movie)
+	err = m.DAO.PostNewMovieDataToDb(movie)
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintln(w,err)
@@ -99,10 +92,8 @@ func PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(movie)
 }
 
-func UpdateMovieRating(w http.ResponseWriter, r *http.Request){
-	var updateRating models.MoieRating
-	json.NewDecoder(r.Body).Decode(&updateRating)
-	err := daos.UpdateMovieRatingInDb(updateRating)
+func (m *Service) UpdateMovieRatingService(w http.ResponseWriter,updateRating models.MovieRating){
+	err := m.DAO.UpdateMovieRatingInDb(updateRating)
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintln(w,err)
@@ -113,10 +104,8 @@ func UpdateMovieRating(w http.ResponseWriter, r *http.Request){
 	json.NewEncoder(w).Encode(updateRating)
 }
 
-func PostMovieRating(w http.ResponseWriter, r *http.Request){
-	var ratingData models.MoieRating
-	json.NewDecoder(r.Body).Decode(&ratingData)
-	err := daos.PostMovieRatingInDb(ratingData)
+func (m *Service) PostMovieRatingService(w http.ResponseWriter,ratingData models.MovieRating){
+	err := m.DAO.PostMovieRatingInDb(ratingData)
 	if err != nil{
 		w.WriteHeader(http.StatusInternalServerError)
 		fmt.Fprintln(w,err)

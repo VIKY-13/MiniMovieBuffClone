@@ -8,8 +8,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
-func AddNewUserToDb(newUser models.User)error{
-	statement,err := Db.Prepare("INSERT INTO users(user_id,firstname,lastname,email,password,age,phone_no) VALUES ($1,$2,$3,$4,$5,$6,$7)")
+func (u *DAO) AddNewUserToDb(newUser models.User)error{
+	statement,err := u.Db.Prepare("INSERT INTO users(user_id,firstname,lastname,email,password,age,phone_no) VALUES ($1,$2,$3,$4,$5,$6,$7)")
 	if err != nil{
 		return err
 	}
@@ -20,10 +20,10 @@ func AddNewUserToDb(newUser models.User)error{
 	return nil
 }
 
-func CheckUserAlreadyExist(newUserEmail string)error{
+func (u *DAO) CheckUserAlreadyExist(newUserEmail string)error{
 	query := "SELECT COUNT(email) FROM users WHERE email=$1;"
     var count int
-    err := Db.QueryRow(query, newUserEmail).Scan(&count)
+    err := u.Db.QueryRow(query, newUserEmail).Scan(&count)
 	if err != nil{
 		return err
 	}
@@ -34,8 +34,8 @@ func CheckUserAlreadyExist(newUserEmail string)error{
 	return nil
 }
 
-func UpdateExistingUser(existingUserUpdateData models.User)error{
-	statement,err := Db.Prepare("UPDATE users SET firstname=$1,lastname=$2,age=$3,phone_no=$4 WHERE user_id=$5")
+func (u *DAO) UpdateExistingUser(existingUserUpdateData models.User)error{
+	statement,err := u.Db.Prepare("UPDATE users SET firstname=$1,lastname=$2,age=$3,phone_no=$4 WHERE user_id=$5")
 	if err != nil{
 		return nil
 	}
@@ -46,9 +46,9 @@ func UpdateExistingUser(existingUserUpdateData models.User)error{
 	return err
 }
 
-func GetUserPassword(user_id string)(string,error){
+func (u *DAO) GetUserPassword(user_id string)(string,error){
 	var password string
-	statement,err := Db.Prepare("SELECT password FROM users WHERE user_id = $1")
+	statement,err := u.Db.Prepare("SELECT password FROM users WHERE user_id = $1")
 	if err != nil{
 		return "",err
 	}
@@ -60,8 +60,8 @@ func GetUserPassword(user_id string)(string,error){
 }
 
 
-func GetUserData(userLoginEmail string,verifyUserLoginCredentials models.User)(models.User,error){
-	statement,err := Db.Prepare("SELECT user_id,firstname,lastname,phone_no,age,email,password FROM users WHERE email= $1;")
+func (u *DAO) GetUserData(userLoginEmail string,verifyUserLoginCredentials models.User)(models.User,error){
+	statement,err := u.Db.Prepare("SELECT user_id,firstname,lastname,phone_no,age,email,password FROM users WHERE email= $1;")
 	if err != nil{
 		return verifyUserLoginCredentials,err
 	}

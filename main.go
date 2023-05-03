@@ -6,10 +6,13 @@ import (
 	"golangmovietask/controllers"
 	"golangmovietask/daos"
 	"golangmovietask/db"
+
 	"golangmovietask/middlewares"
-	"github.com/joho/godotenv"
+	"golangmovietask/services"
 	"log"
 	"net/http"
+
+	"github.com/joho/godotenv"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -36,7 +39,13 @@ func main() {
 	}
 	fmt.Println("connected to Db")
 	defer Db.Close()
-	daos.Init(Db)
+	//initialising the required pointers
+	dao := daos.Init(Db)
+	controllers := &controllers.Controllers{
+		Service: &services.Service{
+		DAO: dao,
+		},
+	}
 	//server up process
 	r:= mux.NewRouter()
 	r.Use(func(next http.Handler) http.Handler {

@@ -7,10 +7,10 @@ import (
 )
 
 
-func GetMovieIdListOnUserWatchlist(user_id string) ([]models.RetrieveMovData,error){
+func (w *DAO) GetMovieIdListOnUserWatchlist(user_id string) ([]models.RetrieveMovData,error){
 	var movies_id []string
 	var movie_id string
-	statement,err := Db.Prepare("SELECT distinct movie_id FROM watchlist WHERE user_id = $1;")
+	statement,err := w.Db.Prepare("SELECT distinct movie_id FROM watchlist WHERE user_id = $1;")
 	if err != nil{
 		return nil,err
 	}
@@ -23,12 +23,12 @@ func GetMovieIdListOnUserWatchlist(user_id string) ([]models.RetrieveMovData,err
 		_ = rows.Scan(&movie_id)
 		movies_id = append(movies_id, movie_id)
 	}
-	movies,_:= RetriveDataOnMovie_id(movies_id)
+	movies,_:= w.RetriveDataOnMovie_id(movies_id)
 	return movies,nil
 }
 
-func AddMovieToUserWatchlistDb(addToWatchList models.Favourite) error{
-	statement,err := Db.Prepare("INSERT INTO watchlist(user_id,movie_id) VALUES ($1,$2)")
+func (w *DAO)AddMovieToUserWatchlistDb(addToWatchList models.Favourite) error{
+	statement,err := w.Db.Prepare("INSERT INTO watchlist(user_id,movie_id) VALUES ($1,$2)")
 	if err != nil{
 		return err
 	}
@@ -39,8 +39,8 @@ func AddMovieToUserWatchlistDb(addToWatchList models.Favourite) error{
 	return nil
 }
 
-func RemoveMovieFromWatchlistDb(removeFromWatchlist models.Favourite) error{
-	statement,err := Db.Prepare("DELETE FROM watchlist WHERE movie_id=$1 AND user_id=$2")
+func (w *DAO) RemoveMovieFromWatchlistDb(removeFromWatchlist models.Favourite) error{
+	statement,err := w.Db.Prepare("DELETE FROM watchlist WHERE movie_id=$1 AND user_id=$2")
 	if err != nil{
 		return err
 	}

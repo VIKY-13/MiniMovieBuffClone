@@ -12,7 +12,7 @@ import(
 
 var templ *template.Template
 
-func APIDocumentation(w http.ResponseWriter, r *http.Request){
+func (m *Controllers) APIDocumentation(w http.ResponseWriter, r *http.Request){
 	urlPath := r.URL.Path
 	resp := strings.Split(urlPath, "/")
 	title := resp[1]
