@@ -6,6 +6,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// *DAO is refered from the movieDao file where we have the struct and we use the same
 func (f *DAO) AddMovieToUserFavouriteDb(addFavourite models.Favourite) error{
 	statement,err := f.Db.Prepare("INSERT INTO favourite(user_id,movie_id) VALUES($1,$2)")
 	if err != nil{

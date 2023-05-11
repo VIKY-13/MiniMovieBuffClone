@@ -10,6 +10,7 @@ import (
 
 )
 
+// *Services is refered from the movieService file where we have the struct and we use the same
 func (u *Service) CreateNewUserService(w http.ResponseWriter,newUser models.User){
 	//checking whether the user already exists
 	err := u.DAO.CheckUserAlreadyExist(newUser.Email)

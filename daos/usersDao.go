@@ -8,6 +8,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+// *DAO is refered from the movieDao file where we have the struct and we use the same
+
 func (u *DAO) AddNewUserToDb(newUser models.User)error{
 	statement,err := u.Db.Prepare("INSERT INTO users(user_id,firstname,lastname,email,password,age,phone_no) VALUES ($1,$2,$3,$4,$5,$6,$7)")
 	if err != nil{

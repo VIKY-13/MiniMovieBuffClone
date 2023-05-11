@@ -6,7 +6,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-
+// *DAO is refered from the movieDao file where we have the struct and we use the same
 func (w *DAO) GetMovieIdListOnUserWatchlist(user_id string) ([]models.RetrieveMovData,error){
 	var movies_id []string
 	var movie_id string

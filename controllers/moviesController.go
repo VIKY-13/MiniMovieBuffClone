@@ -10,6 +10,8 @@ import (
 	"golang.org/x/text/language"
 )
 
+
+//will be using the same structure for all the files in the cotrollers package
 type Controllers struct{
 	Service *services.Service
 }
@@ -48,12 +50,20 @@ func (m *Controllers) PostNewMovieData(w http.ResponseWriter, r *http.Request) {
 
 func (m *Controllers) UpdateMovieRating(w http.ResponseWriter, r *http.Request){
 	var updateRating models.MovieRating
-	json.NewDecoder(r.Body).Decode(&updateRating)
+	err := json.NewDecoder(r.Body).Decode(&updateRating)
+	if err != nil{
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
 	m.Service.UpdateMovieRatingService(w,updateRating)
 }
 
 func (m *Controllers) PostMovieRating(w http.ResponseWriter, r *http.Request){
 	var ratingData models.MovieRating
-	json.NewDecoder(r.Body).Decode(&ratingData)
+	err := json.NewDecoder(r.Body).Decode(&ratingData)
+	if err != nil{
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
 	m.Service.PostMovieRatingService(w,ratingData)
 }

@@ -10,6 +10,8 @@ import (
 	_ "github.com/lib/pq"
 )
 
+
+//will be using the same structb for all the files in the daos package
 type DAO struct{
 	Db *sql.DB
 }

@@ -10,17 +10,26 @@ import (
 )
 
 //user creation
+// *controllers is refered from the movieController file where we have the struct and we use the same
 func (u *Controllers) CreateNewUser(w http.ResponseWriter, r *http.Request){
 	var newUser models.User
 	newUser.User_id = uuid.New().String()
-	json.NewDecoder(r.Body).Decode(&newUser)
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil{
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
 	u.Service.CreateNewUserService(w,newUser)
 }
 
 func (u *Controllers) UpdateUserProfile(w http.ResponseWriter, r *http.Request){
 	var existingUserUpdateData models.User
 	//after login only we'll be able to update, considering that perspective we alredy have the user data which we return when the user logs in which contains the user_id too.
-	json.NewDecoder(r.Body).Decode(&existingUserUpdateData)
+	err := json.NewDecoder(r.Body).Decode(&existingUserUpdateData)
+	if err != nil{
+		w.WriteHeader(http.StatusUnprocessableEntity)
+		return
+	}
 	u.Service.UpdateUserProfileService(w,existingUserUpdateData)
 }
 

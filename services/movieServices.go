@@ -13,6 +13,7 @@ import (
 	// "golang.org/x/text/language"
 )
 
+// will be using this same struct for all the other files in the services
 type Service struct{
 	DAO *daos.DAO
 }
