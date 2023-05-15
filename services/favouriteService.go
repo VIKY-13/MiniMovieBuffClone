@@ -33,6 +33,11 @@ func (f *Service) GetUserFavouritesService(w http.ResponseWriter,userFavourite m
 }
 
 func (f *Service) RemoveUserFavouriteService(w http.ResponseWriter,removeFavourite models.Favourite){
+	if (removeFavourite.Movie_id == "" || removeFavourite.User_id == ""){
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w,"not enough parameters")
+		return
+	}
 	err := f.DAO.RemoveMovieFromFavouriteDb(removeFavourite)
 	if err!= nil{
 		fmt.Fprintln(w,"error while removing favourites")

@@ -29,10 +29,7 @@ func (f *Controllers) GetUserFavourites(w http.ResponseWriter, r *http.Request){
 
 func (f *Controllers) RemoveUserFavourite(w http.ResponseWriter, r *http.Request){
 	var removeFavourite models.Favourite
-	err := json.NewDecoder(r.Body).Decode(&removeFavourite)
-	if err != nil{
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
-	}
+	removeFavourite.User_id = r.URL.Query().Get("user_id")
+	removeFavourite.Movie_id = r.URL.Query().Get("movie_id")
 	f.Service.RemoveUserFavouriteService(w,removeFavourite)
 }

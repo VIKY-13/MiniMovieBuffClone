@@ -37,6 +37,11 @@ func (wl *Service) GetUserWatchlistService(w http.ResponseWriter, userWatchlist 
 }
 
 func (wl *Service) RemoveMovieFromUserWatchlistService(w http.ResponseWriter,removeFromWatchlist models.Favourite){
+	if (removeFromWatchlist.Movie_id == "" || removeFromWatchlist.User_id == ""){
+		w.WriteHeader(http.StatusBadRequest)
+		fmt.Fprintln(w,"not enough parameters")
+		return
+	}
 	err := wl.DAO.RemoveMovieFromWatchlistDb(removeFromWatchlist)
 	if err!= nil{
 		w.WriteHeader(http.StatusInternalServerError)

@@ -20,11 +20,8 @@ func (wl *Controllers) AddMovieToUserWatchlist(w http.ResponseWriter, r *http.Re
 
 func (wl *Controllers) RemoveMovieFromUserWatchlist(w http.ResponseWriter, r *http.Request){
 	var removeFromWatchlist models.Favourite	//we use favourite structure as it requires the same
-	err := json.NewDecoder(r.Body).Decode(&removeFromWatchlist)
-	if err != nil{
-		w.WriteHeader(http.StatusUnprocessableEntity)
-		return
-	}
+	removeFromWatchlist.User_id = r.URL.Query().Get("user_id")
+	removeFromWatchlist.Movie_id = r.URL.Query().Get("movie_id")
 	wl.Service.RemoveMovieFromUserWatchlistService(w,removeFromWatchlist)
 }
 
